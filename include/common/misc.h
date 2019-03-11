@@ -94,6 +94,10 @@ vasprintf(char **dst, const char *fmt, va_list ap);
 
 #endif
 
+#if !defined(PID_T_FMT)
+#define PID_T_FMT "d"
+#endif
+
 #if defined(__cplusplus)
 }
 #endif

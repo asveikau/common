@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <common/misc.h>
+
 int
 closefrom(int minfd)
 {
@@ -21,7 +23,7 @@ closefrom(int minfd)
    int r = 0;
    int fd;
 
-   snprintf(buf, sizeof(buf), "/proc/%ld/fd", getpid());
+   snprintf(buf, sizeof(buf), "/proc/%" PID_T_FMT "/fd", getpid());
 
    dir = opendir(buf);
 
