@@ -58,7 +58,7 @@ extern "C" {
 #define FIELD_OFFSET(type, memb) ((intptr_t)(&((type*)0)->memb))
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 int
 closefrom(int minfd);
 #endif
