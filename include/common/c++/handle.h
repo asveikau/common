@@ -40,7 +40,10 @@ public:
    Reset()
    {
       if (Valid())
+      {
          Info::Close(value);
+         Detach();
+      }
    }
 
    void
