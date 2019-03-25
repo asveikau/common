@@ -19,6 +19,12 @@
 #define MUTEX_PTHREAD
 #endif
 
+// XXX - we have a name conflict on Solaris.
+#if defined(__sun__)
+#include <sys/mutex.h>
+#define mutex libcommon_mutex
+#endif
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
