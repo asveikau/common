@@ -21,8 +21,9 @@
 
 // XXX - we have a name conflict on Solaris.
 #if defined(__sun__)
+#define mutex mutex_sun
 #include <sys/mutex.h>
-#define mutex libcommon_mutex
+#undef mutex
 #endif
 
 #if defined(__cplusplus)
