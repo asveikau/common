@@ -46,20 +46,22 @@ public:
       }
    }
 
-   void
+   typename Info::T
    Detach()
    {
+      auto old = value;
       value = Info::InitialValue;
+      return old;
    }
 
    bool
-   Valid()
+   Valid() const
    {
       return Info::Valid(value);
    }
 
    typename Info::T
-   Get()
+   Get() const
    {
       return value;
    }
