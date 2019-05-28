@@ -435,6 +435,31 @@ get_private_dir(int flags, error *err)
    secure_mkdir(r, err);
    ERROR_CHECK(err);
 
+#if !defined(_WINDOWS)
+   if (!(flags & PRIVATE_DIR_ROAMING) &&
+       path_is_remote(r, err))
+   {
+      char hostname[4+256] = "nfs_";
+      char *p = NULL;
+
+      if (gethostname(hostname+4, sizeof(hostname)-4))
+         ERROR_SET(err, errno, errno);
+
+      p = strchr(hostname, '.');
+      if (p)
+         *p = 0;
+
+      p = append_path(r, hostname, err);
+      ERROR_CHECK(err);
+      free(r);
+      r = p;
+
+      secure_mkdir(r, err);
+      ERROR_CHECK(err);
+   }
+   ERROR_CHECK(err);
+#endif
+
 exit:
    free(home);
    free(legacy);
