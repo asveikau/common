@@ -1,4 +1,4 @@
-TESTS=utf log
+TESTS=utf log fsinfo
 
 all: $(TESTS)
 
@@ -10,6 +10,9 @@ include ../Makefile.inc
 
 CFLAGS+=-Wall
 CFLAGS+=$(LIBCOMMON_CFLAGS)
+
+fsinfo: fsinfo.c $(LIBCOMMON)
+	$(CC) $(CFLAGS) -o $@ fsinfo.c $(LIBCOMMON)
 
 utf: utf.c $(LIBCOMMON)
 	$(CC) $(CFLAGS) -o $@ utf.c $(LIBCOMMON)

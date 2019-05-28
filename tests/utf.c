@@ -1,5 +1,5 @@
-#include <utf.h>
-#include <misc.h>
+#include <common/utf.h>
+#include <common/misc.h>
 
 #include <stdio.h>
 #include <string.h>

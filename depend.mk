@@ -45,6 +45,8 @@ $(LIBCOMMON_ROOT)src/recmutex.o: $(LIBCOMMON_ROOT)src/recmutex.c $(LIBCOMMON_ROO
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/refcnt.o: $(LIBCOMMON_ROOT)src/refcnt.c $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/refcnt.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
+$(LIBCOMMON_ROOT)src/remotepath.o: $(LIBCOMMON_ROOT)src/remotepath.c $(LIBCOMMON_ROOT)include/common/buffer.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/path.h
+	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/sem.o: $(LIBCOMMON_ROOT)src/sem.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/sem.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/size.o: $(LIBCOMMON_ROOT)src/size.c $(LIBCOMMON_ROOT)include/common/size.h

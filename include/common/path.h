@@ -64,6 +64,9 @@ path_exists(const char *path, error *err);
 bool
 path_is_relative(const char *path);
 
+bool
+path_is_remote(const char *path, error *err);
+
 uint64_t
 get_file_size(const char *path, error *err);
 
