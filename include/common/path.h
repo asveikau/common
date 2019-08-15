@@ -70,6 +70,9 @@ path_is_remote(const char *path, error *err);
 uint64_t
 get_file_size(const char *path, error *err);
 
+char *
+get_cwd(error *err);
+
 enum private_dir_flags
 {
    PRIVATE_DIR_ROAMING = (1<<0),

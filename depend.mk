@@ -37,7 +37,7 @@ $(LIBCOMMON_ROOT)src/monotonic.o: $(LIBCOMMON_ROOT)src/monotonic.c $(LIBCOMMON_R
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/mutex.o: $(LIBCOMMON_ROOT)src/mutex.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/path.o: $(LIBCOMMON_ROOT)src/path.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h
+$(LIBCOMMON_ROOT)src/path.o: $(LIBCOMMON_ROOT)src/path.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h $(LIBCOMMON_ROOT)include/common/size.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/progname.o: $(LIBCOMMON_ROOT)src/progname.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/lazy.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<

@@ -8,6 +8,7 @@
 
 #include <common/path.h>
 #include <common/misc.h>
+#include <common/size.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -394,6 +395,51 @@ exit:
    return size.QuadPart;
 }
 
+char *
+get_cwd(error *err)
+{
+   PWSTR buffer = NULL;
+   DWORD len = 0;
+   DWORD lenOut = 0;
+   char *r = NULL;
+   DWORD cb = 0;
+   HRESULT hr = S_OK;
+
+   len = MAX_PATH;
+retry:
+   hr = DWordMult(len, sizeof(WCHAR), &cb);
+   if (FAILED(hr))
+      ERROR_SET(err, win32, hr);
+   if (buffer)
+   {
+      PWSTR p = realloc(buffer, cb);
+      if (!p)
+         ERROR_SET(err, nomem);
+      buffer = p;
+   }
+   else
+   {
+      buffer = malloc(cb);
+      if (!buffer)
+         ERROR_SET(err, nomem);
+   }
+
+   lenOut = GetCurrentDirectory(len, buffer);
+   if (!lenOut)
+      ERROR_SET(err, win32, GetLastError());
+   if (lenOut > len)
+   {
+      len = lenOut;
+      goto retry;
+   }
+
+   r = ConvertToPstr(buffer, err);
+   ERROR_CHECK(err);
+exit:
+   free(buffer);
+   return r;
+}
+
 #else
 
 #include <sys/types.h>
@@ -402,6 +448,13 @@ exit:
 
 #include <dirent.h>
 #include <errno.h>
+
+#if defined(__linux)
+#include <linux/limits.h>
+#endif
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 #if 0 // this API is a bad idea, the DIR pointer should be enough state...
 #if defined(__APPLE__)
@@ -610,6 +663,48 @@ get_file_size(const char *path, error *err)
    size = buf.st_size;
 exit:
    return size;
+}
+
+char *
+get_cwd(error *err)
+{
+   char *r = NULL;
+   size_t n = 0;
+
+   n = PATH_MAX;
+retry:
+   if (r)
+   {
+      char *p = realloc(r, n);
+      if (!p)
+         ERROR_SET(err, nomem);
+      r = p;
+   }
+   else
+   {
+      r = malloc(n);
+      if (!r)
+         ERROR_SET(err, nomem);
+   }
+
+   if (!getcwd(r, n))
+   {
+      if (errno == ERANGE)
+      {
+         if (size_mult(n, 2, &n))
+            ERROR_SET(err, unknown, "Integer overflow");
+         goto retry;
+      }
+      ERROR_SET(err, errno, errno);
+   }
+
+exit:
+   if (ERROR_FAILED(err))
+   {
+      free(r);
+      r = NULL;
+   }
+   return r;
 }
 
 #endif
