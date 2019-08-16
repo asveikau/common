@@ -64,6 +64,11 @@ path_exists(const char *path, error *err);
 bool
 path_is_relative(const char *path);
 
+// Returns NULL if path is already absolute.
+//
+char *
+make_absolute_path(const char *path, error *err);
+
 bool
 path_is_remote(const char *path, error *err);
 

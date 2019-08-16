@@ -144,6 +144,53 @@ is_dot_or_space(char ch)
    return ch == '.' || ch == ' ';
 }
 
+static
+char *
+win_get_full_path(const char *path, error *err)
+{
+   PWSTR wide_path = NULL;
+   PWSTR full_path = NULL;
+   DWORD bufferLength = MAX_PATH / 2;
+   DWORD r = 0;
+   PSTR ret8 = NULL;
+
+   wide_path = ConvertToPwstr(path, err);
+   ERROR_CHECK(err);
+
+   do
+   {
+      HRESULT hr = S_OK;
+
+      hr = DWordMult(bufferLength, 2 * sizeof(WCHAR), &bufferLength);
+      if (FAILED(hr))
+         ERROR_SET(err, win32, hr);
+
+      if (full_path)
+      {
+         void *p = realloc(full_path, bufferLength);
+         if (!p)
+            ERROR_SET(err, nomem);
+         full_path = p;
+      }
+      else
+      {
+         full_path = malloc(bufferLength);
+         if (!full_path)
+            ERROR_SET(err, nomem);
+      }
+
+      bufferLength /= sizeof(WCHAR);
+   } while ((r = GetFullPathName(wide_path, bufferLength, full_path, NULL)) &&
+            (r > bufferLength - 1));
+
+   ret8 = ConvertToPstr(full_path, err);
+   ERROR_CHECK(err);
+exit:
+   free(wide_path);
+   free(full_path);
+   return ret8;
+}
+
 static void
 append_path_impl(
    const char *dir,
@@ -158,8 +205,6 @@ append_path_impl(
    bool has_whackwhack = false;
    bool needs_whackwhack = false;
    bool is_unc = false;
-   PWSTR wide_dir = NULL;
-   PWSTR full_path = NULL;
    char *heap_temp = NULL;
    char *resbuf = NULL;
    const char whackwhack[] = "\\\\?\\";
@@ -196,39 +241,7 @@ append_path_impl(
 
    if (needs_whackwhack)
    {
-      DWORD bufferLength = MAX_PATH / 2;
-      DWORD r = 0;
-
-      wide_dir = ConvertToPwstr(dir, err);
-      ERROR_CHECK(err);
-
-      do
-      {
-         HRESULT hr = S_OK;
-
-         hr = DWordMult(bufferLength, 2 * sizeof(WCHAR), &bufferLength);
-         if (FAILED(hr))
-            ERROR_SET(err, win32, hr);
-
-         if (full_path)
-         {
-            void *p = realloc(full_path, bufferLength);
-            if (!p)
-               ERROR_SET(err, nomem);
-            full_path = p;
-         }
-         else
-         {
-            full_path = malloc(bufferLength);
-            if (!full_path)
-               ERROR_SET(err, nomem);
-         }
-
-         bufferLength /= sizeof(WCHAR);
-      } while ((r = GetFullPathName(wide_dir, bufferLength, full_path, NULL)) &&
-               (r > bufferLength - 1));
-
-      heap_temp = ConvertToPstr(full_path, err);
+      heap_temp = win_get_full_path(dir, err);
       ERROR_CHECK(err);
 
       dir = heap_temp;
@@ -262,8 +275,6 @@ append_path_impl(
    *result = resbuf;
    resbuf = NULL;
 exit:
-   free(wide_dir);
-   free(full_path);
    free(heap_temp);
    free(resbuf);
 }
@@ -438,6 +449,14 @@ retry:
 exit:
    free(buffer);
    return r;
+}
+
+static
+bool
+is_drive_letter(char ch)
+{
+   return (ch >= 'A' && ch <= 'Z') ||
+          (ch >= 'a' && ch <= 'z');
 }
 
 #else
@@ -714,14 +733,85 @@ path_is_relative(const char *path)
 {
    if (!path || !*path)
       return false;
+
+   // Leading slashes are absolute, except on Windows.
+   //
+#if !defined(_WINDOWS) || defined(UNDER_CE)
    if (strchr(PATH_SEP_PBRK, *path))
       return false;
-#if defined(_WINDOWS)
-   if (((*path >= 'A' && *path <= 'Z') ||
-        (*path >= 'a' && *path <= 'z')) &&
+#endif
+
+#if defined(_WINDOWS) && !defined(UNDER_CE)
+
+   // NT special paths...
+   //
+   {
+      static const PCSTR prefixes[] =
+      {
+         "\\??\\", "\\\\?\\", NULL
+      };
+      const PCSTR *p = prefixes;
+      for (; *p; ++p)
+      {
+         int len = strlen(*p);
+         if (!strncmp(path, *p, len))
+            return false;
+      }
+   }
+
+   // UNC paths (and some special NT paths)
+   //
+   if (strchr(PATH_SEP_PBRK, *path) &&
+       strchr(PATH_SEP_PBRK, path[1]))
+      return false;
+
+   // Drive letters.
+   // Note that C:\foo is absolute, and C:foo is relative.
+   //
+   if (is_drive_letter(*path) &&
        path[1] == ':' &&
        strchr(PATH_SEP_PBRK, path[2]))
       return false;
 #endif
    return true;
+}
+
+char *
+make_absolute_path(const char *path, error *err)
+{
+   char *r = NULL;
+   char *wd = NULL;
+
+   if (!path_is_relative(path))
+      goto exit;
+
+   // Some weird Windows cases to consider:
+   //   \foo   is relative to the current directory's drive letter.
+   //   C:foo  needs to check env var "=C:" to get per-drive cwd.
+   // Considered writing some code to handle these but Win32
+   // GetFullPathName(), wrapped below, handles that.
+   //
+#if defined(_WINDOWS)
+   r = win_get_full_path(path, err);
+   ERROR_CHECK(err);
+   goto exit;
+#endif
+
+   if (!wd)
+   {
+      wd = get_cwd(err);
+      ERROR_CHECK(err);
+   }
+
+   r = append_path(wd, path, err);
+   ERROR_CHECK(err);
+
+exit:
+   free(wd);
+   if (ERROR_FAILED(err))
+   {
+      free(r);
+      r = NULL;
+   }
+   return r;
 }
