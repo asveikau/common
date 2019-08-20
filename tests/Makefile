@@ -1,4 +1,4 @@
-TESTS=utf log fsinfo
+TESTS=append-path utf log fsinfo
 
 all: $(TESTS)
 
@@ -10,6 +10,9 @@ include ../Makefile.inc
 
 CFLAGS+=-Wall
 CFLAGS+=$(LIBCOMMON_CFLAGS)
+
+append-path: append-path.c $(LIBCOMMON)
+	$(CC) $(CFLAGS) -o $@ append-path.c $(LIBCOMMON)
 
 fsinfo: fsinfo.c $(LIBCOMMON)
 	$(CC) $(CFLAGS) -o $@ fsinfo.c $(LIBCOMMON)

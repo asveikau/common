@@ -21,6 +21,13 @@ is_dotdot(const char *name)
           (!name[1] || (name[1] == '.' && !name[2]));
 }
 
+static void
+filter_trailing_slashes(const char *dir, int *dirlen)
+{
+   while (*dirlen > 1 && strchr(PATH_SEP_PBRK, dir[*dirlen-1]))
+      --*dirlen;
+}
+
 #if defined(_WINDOWS)
 #include <windows.h> 
 #include <intsafe.h>
@@ -210,6 +217,9 @@ append_path_impl(
    const char whackwhack[] = "\\\\?\\";
    char *p = NULL;
 
+   dirlen = strlen(dir);
+   filter_trailing_slashes(dir, &dirlen);
+
    has_whackwhack = !strncmp(dir, whackwhack, sizeof(whackwhack) - 1);
    if (!has_whackwhack)
    {
@@ -224,7 +234,7 @@ append_path_impl(
             CP_UTF8,
             0,
             dir,
-            strlen(dir),
+            dirlen,
             NULL,
             0
          );
@@ -245,13 +255,14 @@ append_path_impl(
       ERROR_CHECK(err);
 
       dir = heap_temp;
+      dirlen = strlen(dir);
+      filter_trailing_slashes(dir, &dirlen);
 
       is_unc = (dir[0] == '\\' && dir[1] == '\\');
       if (is_unc)
          needs_whackwhack = false;
    }
 
-   dirlen = strlen(dir);
    required = dirlen + namelen + 2;
    if (needs_whackwhack)
       required += (sizeof(whackwhack) - 1);
@@ -609,7 +620,7 @@ append_path(
 {
    char *result = NULL;
    char *p;
-   int dirlen, namelen;
+   int dirlen;
 
    if (!dir || !*dir)
       ERROR_SET(err, unknown, "Null or empty directory");
@@ -617,18 +628,44 @@ append_path(
       ERROR_SET(err, unknown, "Null or empty filename");
 
    dirlen = strlen(dir);
-   namelen = strlen(name);
 
-   result = malloc(dirlen + namelen + 2);
+   filter_trailing_slashes(dir, &dirlen);
+
+   result = malloc(dirlen + strlen(name) + 2);
    if (!result)
       ERROR_SET(err, nomem);
 
    p = result;
    memcpy(p, dir, dirlen);
    p += dirlen;
-   *p++ = PATH_SEP;
-   memcpy(p, name, namelen);
-   p += namelen;
+   while (name)
+   {
+      char *next = strpbrk(name, PATH_SEP_PBRK);
+      int namelen = next ? next - name : strlen(name);
+
+      if (!namelen || (namelen == 1 && *name == '.'))
+         ; // no-op.
+      else if (p != result && namelen == 2 && *name == '.' && name[1] == '.')
+      {
+         if (p != result && !(p == result+1 && strchr(PATH_SEP_PBRK, *result)))
+            --p;
+         while (p != result && !strchr(PATH_SEP_PBRK, *p))
+            --p;
+         if (p == result && strchr(PATH_SEP_PBRK, *p))
+            ++p;
+         if (p == result && !name[namelen])
+            *p++ = '.';
+      }
+      else
+      {
+         if (p != result && !strchr(PATH_SEP_PBRK, p[-1]))
+            *p++ = PATH_SEP;
+         memcpy(p, name, namelen);
+         p += namelen;
+      }
+
+      name = next ? next + 1 : NULL;
+   }
    *p = 0;
 
 exit:
