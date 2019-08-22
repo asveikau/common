@@ -338,6 +338,8 @@ append_path_impl(
    {
       if (!is_root(resbuf, p))
       {
+         char *orig = p;
+
          if (p != resbuf && !(p == resbuf+1 && strchr(PATH_SEP_PBRK, *resbuf)))
             --p;
          while (p != resbuf && !strchr(PATH_SEP_PBRK, *p))
@@ -346,6 +348,12 @@ append_path_impl(
             ++p;
          if (p == resbuf && !name[namelen])
             *p++ = '.';
+
+         if (p != orig && !strncmp(p, "..", orig-p))
+         {
+            p = orig;
+            goto copy;
+         }
       }
       else
       {
@@ -355,7 +363,9 @@ append_path_impl(
    }
    else
    {
-      *p++ = PATH_SEP;
+   copy:
+      if (p != resbuf && !strchr(PATH_SEP_PBRK, p[-1]))
+         *p++ = PATH_SEP;
       memcpy(p, name, namelen);
       p += namelen;
    }

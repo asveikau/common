@@ -61,6 +61,11 @@ main()
       {"\\\\host\\share",      "..",       "\\\\host\\share"},
       {"\\\\host\\share\\foo", "..",       "\\\\host\\share"},
       {"\\\\host\\share",      "foo ",     "\\\\host\\share\\foo "},
+      {"foo",                  ".",        "foo"},
+      {"foo",                  "..",       "."},
+      {"foo",                  "../../..", "..\\.."},
+      {"foo",                  "../bar",   "bar"},
+      {"foo",                  "../..",    ".."},
 #endif
       {NULL, NULL, NULL}
    };
