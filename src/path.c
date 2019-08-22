@@ -725,6 +725,8 @@ append_path(
          ; // no-op.
       else if (p != result && namelen == 2 && *name == '.' && name[1] == '.')
       {
+         char *orig = p;
+
          if (p != result && !(p == result+1 && strchr(PATH_SEP_PBRK, *result)))
             --p;
          while (p != result && !strchr(PATH_SEP_PBRK, *p))
@@ -733,9 +735,16 @@ append_path(
             ++p;
          if (p == result && !name[namelen])
             *p++ = '.';
+
+         if (p != orig && !strncmp(p, "..", orig-p))
+         {
+            p = orig;
+            goto copy;
+         }
       }
       else
       {
+      copy:
          if (p != result && !strchr(PATH_SEP_PBRK, p[-1]))
             *p++ = PATH_SEP;
          memcpy(p, name, namelen);

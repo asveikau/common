@@ -47,6 +47,7 @@ main()
       {"/usr",  "bin",                  "/usr/bin"},
       {"/usr/", "bin/",                 "/usr/bin"},
       {"/usr/", "/local///share/bin/",  "/usr/local/share/bin"},
+      {"foo",   "../../..",             "../.."},
 #else
       {"C:\\",                 "foo",      "C:\\foo"},
       {"C:\\",                 "/foo",     "C:\\foo"},
