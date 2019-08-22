@@ -24,7 +24,11 @@ is_dotdot(const char *name)
 static void
 filter_trailing_slashes(const char *dir, int *dirlen)
 {
-   while (*dirlen > 1 && strchr(PATH_SEP_PBRK, dir[*dirlen-1]))
+   int min = 1;
+#if defined(_WINDOWS)
+   min = 0;
+#endif
+   while (*dirlen > min && strchr(PATH_SEP_PBRK, dir[*dirlen-1]))
       --*dirlen;
 }
 
@@ -198,6 +202,42 @@ exit:
    return ret8;
 }
 
+static
+bool
+is_root(
+   char *resbuf,
+   char *p
+)
+{
+   int len = p - resbuf;
+
+   // drive letter
+   if (p[-1] == ':')
+      return true;
+
+   // UNC
+   if (len > 2 &&
+       resbuf[0] == '\\' &&
+       resbuf[1] == '\\')
+   {
+      int i;
+      bool hit = false;
+      for (i=2; i<len; ++i)
+      {
+         if (resbuf[i] == '\\')
+         {
+            if (hit)
+               return false;
+            hit = true;
+         }
+      }
+      if (hit)
+         return true;
+   }
+
+   return false;
+}
+
 static void
 append_path_impl(
    const char *dir,
@@ -216,19 +256,29 @@ append_path_impl(
    char *resbuf = NULL;
    const char whackwhack[] = "\\\\?\\";
    char *p = NULL;
+   bool dotdot = false;
 
    dirlen = strlen(dir);
    filter_trailing_slashes(dir, &dirlen);
 
+   switch (namelen)
+   {
+   case 2:
+      if (name[1] != '.')
+         break;
+   case 1:
+      dotdot = (*name == '.');
+   }
+
    has_whackwhack = !strncmp(dir, whackwhack, sizeof(whackwhack) - 1);
-   if (!has_whackwhack)
+   if (!has_whackwhack && !dotdot)
    {
       if (namelen &&
           is_dot_or_space(name[namelen-1]))
       {
          needs_whackwhack = true;
       }
-      else
+      else if (dirlen)
       {
          int r = MultiByteToWideChar(
             CP_UTF8,
@@ -278,9 +328,37 @@ append_path_impl(
    }
    memcpy(p, dir, dirlen);
    p += dirlen;
-   *p++ = PATH_SEP;
-   memcpy(p, name, namelen);
-   p += namelen;
+
+   if (namelen == 0 || (namelen == 1 && *name == '.'))
+   {
+      if (resbuf != p && p[-1] == ':')
+         *p++ = PATH_SEP;
+   }
+   else if (resbuf != p && namelen == 2 && *name == '.' && name[1] == '.')
+   {
+      if (!is_root(resbuf, p))
+      {
+         if (p != resbuf && !(p == resbuf+1 && strchr(PATH_SEP_PBRK, *resbuf)))
+            --p;
+         while (p != resbuf && !strchr(PATH_SEP_PBRK, *p))
+            --p;
+         if (p == resbuf && strchr(PATH_SEP_PBRK, *p))
+            ++p;
+         if (p == resbuf && !name[namelen])
+            *p++ = '.';
+      }
+      else
+      {
+         if (p[-1] == ':')
+            *p++ = PATH_SEP;
+      }
+   }
+   else
+   {
+      *p++ = PATH_SEP;
+      memcpy(p, name, namelen);
+      p += namelen;
+   }
    *p = 0;
 
    *result = resbuf;

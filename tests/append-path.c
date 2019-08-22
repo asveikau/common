@@ -24,8 +24,13 @@ main()
    {
       const char *prefix, *suffix, *expected;
    };
+#if defined(_WINDOWS)
+   static char maxPathBuf[MAX_PATH+1] = {0};
+   static char maxPathBufResult[7+sizeof(maxPathBuf)];
+#endif
    static const struct test_case cases[] =
    {
+#if !defined(_WINDOWS)
       {"/",     "foo",                  "/foo"},
       {"/",     "/foo",                 "/foo"},
       {"/",     "foo/bar/../baz",       "/foo/baz"},
@@ -42,9 +47,29 @@ main()
       {"/usr",  "bin",                  "/usr/bin"},
       {"/usr/", "bin/",                 "/usr/bin"},
       {"/usr/", "/local///share/bin/",  "/usr/local/share/bin"},
+#else
+      {"C:\\",                 "foo",      "C:\\foo"},
+      {"C:\\",                 "/foo",     "C:\\foo"},
+      {"C:\\",                 "\\foo",    "C:\\foo"},
+      {"C:\\",                 "foo .",    "\\\\?\\C:\\foo ."},
+      {"C:\\",                 maxPathBuf, maxPathBufResult},
+      {"C:\\foo",              ".",        "C:\\foo"},
+      {"C:\\foo\\bar",         "..",       "C:\\foo"},
+      {"C:\\",                 ".",        "C:\\"},
+      {"C:\\",                 "..",       "C:\\"},
+      {"\\\\host\\share",      "..",       "\\\\host\\share"},
+      {"\\\\host\\share\\foo", "..",       "\\\\host\\share"},
+      {"\\\\host\\share",      "foo ",     "\\\\host\\share\\foo "},
+#endif
       {NULL, NULL, NULL}
    };
    const struct test_case *p = cases;
+
+#if defined(_WINDOWS)
+   memset(maxPathBuf, 'a', sizeof(maxPathBuf) - 1);
+   strcpy(maxPathBufResult, "\\\\?\\C:\\");
+   memcpy(maxPathBufResult + strlen(maxPathBufResult), maxPathBuf, sizeof(maxPathBuf));
+#endif
 
    for (; p->prefix; ++p)
    {
