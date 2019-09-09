@@ -72,6 +72,14 @@ make_absolute_path(const char *path, error *err);
 bool
 path_is_remote(const char *path, error *err);
 
+#if defined(_WINDOWS)
+bool
+fd_is_remote(HANDLE fd, error *err);
+#else
+bool
+fd_is_remote(int fd, error *err);
+#endif
+
 uint64_t
 get_file_size(const char *path, error *err);
 

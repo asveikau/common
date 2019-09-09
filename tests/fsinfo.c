@@ -10,8 +10,14 @@ log_callback(void *context, const char *buffer)
    fprintf(stderr, "%s\n", buffer);
 }
 
+#if !defined(__linux__) && !defined(__sun__)
+
+#define HAVE_GET_MOUNT_POINT
+
 char *
 get_mount_point(const char *path, error *err);
+
+#endif
 
 char *
 get_fs_type(const char *path, error *err);
@@ -30,11 +36,13 @@ int main(int argc, char **argv)
 
    printf("path:        %s\n", argv[1]);
 
+#ifdef HAVE_GET_MOUNT_POINT
    p = get_mount_point(argv[1], &err);
    ERROR_CHECK(&err);
    printf("mount point: %s\n", p);
    free(p);
    p = NULL;
+#endif
 
    p = get_fs_type(argv[1], &err);
    ERROR_CHECK(&err);

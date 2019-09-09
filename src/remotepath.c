@@ -17,15 +17,30 @@
     defined(__NetBSD__)
 
 #define HAVE_GET_MOUNT_POINT
-#define HAVE_GET_FS_TYPE
+#define HAVE_STATFS
 
 #include <sys/param.h>
 #include <sys/mount.h>
 
 #if defined(__NetBSD__)
 #include <sys/statvfs.h>
-#define statfs statvfs
+#define statfs  statvfs
+#define fstatfs fstatvfs
 #endif
+
+
+static
+char *
+get_mount_point_statfs(const struct statfs *buf, error *err)
+{
+   char *p = NULL;
+
+   if (!(p = strdup(buf->f_mntonname)))
+      ERROR_SET(err, nomem);
+
+exit:
+   return p;
+}
 
 char *
 get_mount_point(const char *path, error *err)
@@ -36,23 +51,36 @@ get_mount_point(const char *path, error *err)
    if (statfs(path, &buf))
       ERROR_SET(err, errno, errno);
 
-   if (!(p = strdup(buf.f_mntonname)))
-      ERROR_SET(err, nomem);
+   p = get_mount_point_statfs(&buf, err);
+   ERROR_CHECK(err);
 
 exit:
    return p;
 }
 
 char *
-get_fs_type(const char *path, error *err)
+get_mount_point_fd(int fd, error *err)
 {
    struct statfs buf;
    char *p = NULL;
 
-   if (statfs(path, &buf))
+   if (fstatfs(fd, &buf))
       ERROR_SET(err, errno, errno);
 
-   if (!(p = strdup(buf.f_fstypename)))
+   p = get_mount_point_statfs(&buf, err);
+   ERROR_CHECK(err);
+
+exit:
+   return p;
+}
+
+static
+char *
+get_fs_type_statfs(const struct statfs *buf, error *err)
+{
+   char *p = NULL;
+
+   if (!(p = strdup(buf->f_fstypename)))
       ERROR_SET(err, nomem);
 
 exit:
@@ -65,6 +93,17 @@ exit:
 
 #include <sys/stat.h>
 
+static
+char *
+get_fs_type_stat(const struct stat *buf, error *err)
+{
+   char *p = NULL;
+   if (!(p = strdup(buf->st_fstype)))
+      ERROR_SET(err, nomem);
+exit:
+   return p;
+}
+
 char *
 get_fs_type(const char *path, error *err)
 {
@@ -74,8 +113,24 @@ get_fs_type(const char *path, error *err)
    if (stat(path, &buf))
       ERROR_SET(err, errno, errno);
 
-   if (!(p = strdup(buf.st_fstype)))
-      ERROR_SET(err, nomem);
+   p = get_fs_type_stat(&buf, err);
+   ERROR_CHECK(err);
+
+exit:
+   return p;
+}
+
+char *
+get_fs_type_fd(int fd, error *err)
+{
+   struct stat buf;
+   char *p = NULL;
+
+   if (fstat(fd, &buf))
+      ERROR_SET(err, errno, errno);
+
+   p = get_fs_type_stat(&buf, err);
+   ERROR_CHECK(err);
 
 exit:
    return p;
@@ -83,7 +138,7 @@ exit:
 
 #elif defined(__linux__)
 
-#define HAVE_GET_FS_TYPE
+#define HAVE_STATFS
 
 #include <sys/vfs.h>
 #include <linux/magic.h>
@@ -96,18 +151,14 @@ exit:
 #define JFS_SUPER_MAGIC      0x3153464a
 #define NTFS_SB_MAGIC        0x5346544e
 
-char *
-get_fs_type(const char *path, error *err)
+static char *
+get_fs_type_statfs(const struct statfs *buf, error *err)
 {
-   struct statfs buf;
    char cpBuf[64];
    const char *cp = NULL;
    char *p = NULL;
 
-   if (statfs(path, &buf))
-      ERROR_SET(err, errno, errno);
-
-   switch (buf.f_type)
+   switch (buf->f_type)
    {
 #define FSTYPE(MAGIC, STRING) case MAGIC: cp = STRING; break
 
@@ -144,7 +195,7 @@ get_fs_type(const char *path, error *err)
 #undef FSTYPE
 
    default:
-      snprintf(cpBuf, sizeof(cpBuf), "unknown[%lx]", buf.f_type);
+      snprintf(cpBuf, sizeof(cpBuf), "unknown[%lx]", buf->f_type);
       cp = cpBuf;
    }
 
@@ -157,198 +208,40 @@ exit:
 
 #endif
 
-#if !defined(HAVE_GET_MOUNT_POINT) || !defined(HAVE_GET_FS_TYPE)
+#if defined(HAVE_STATFS)
 
-#include <unistd.h>
-#include <spawn.h>
-#include <common/buffer.h>
-#include <stdarg.h>
-#include <ctype.h>
-
-static void
-spawn_to_pipe(error *err, int *fd, const char *argv0, ...)
-{
-   int fds[2] = {-1, -1};
-   buffer argv = {0};
-   const char *arg = NULL;
-   va_list ap;
-   int r = 0;
-   pid_t pid = -1;
-   int flags = 0;
-
-   posix_spawn_file_actions_t fa;
-   posix_spawnattr_t sa;
-   bool fa_init = false;
-   bool sa_init = false;
-
-   va_start(ap, argv0);
-
-   if ((r = posix_spawnattr_init(&sa)))
-      ERROR_SET(err, errno, r);
-
-   sa_init = true;
-
-   if ((r = posix_spawn_file_actions_init(&fa)))
-      ERROR_SET(err, errno, r);
-
-   fa_init = true;
-
-   if (pipe(fds))
-      ERROR_SET(err, errno, errno);
-
-   if ((r = posix_spawn_file_actions_adddup2(&fa, fds[1], 1)))
-      ERROR_SET(err, errno, r);
-
-   if(!buffer_append(&argv, &argv0, sizeof(argv0)))
-      ERROR_SET(err, nomem);
-
-   do
-   {
-      arg = va_arg(ap, const char *);
-      if (!buffer_append(&argv, &arg, sizeof(arg)))
-         ERROR_SET(err, nomem);
-   } while (arg);
-
-   if (flags && (r = posix_spawnattr_setflags(&sa, flags)))
-      ERROR_SET(err, errno, r);
-
-   r = posix_spawnp(
-      &pid,
-      argv0,
-      &fa,
-      &sa,
-      BUFFER_PTR(&argv),
-      NULL
-   );
-   if (r)
-      ERROR_SET(err, errno, r);
-
-   *fd = fds[0];
-   fds[0] = -1;
-
-exit:
-   if (fds[0] >= 0)
-      close(fds[0]);
-   if (fds[1] >= 0)
-      close(fds[1]);
-   buffer_destroy(&argv);
-   if (fa_init)
-      posix_spawn_file_actions_destroy(&fa);
-   if (sa_init)
-      posix_spawnattr_destroy(&sa);
-   va_end(ap);
-}
-
-#endif
-
-#ifndef HAVE_GET_MOUNT_POINT
+#define HAVE_GET_FS_TYPE
 
 char *
-get_mount_point(const char *path, error *err)
+get_fs_type(const char *path, error *err)
 {
-   int fd = -1;
-   char buf[4096];
-   int r = 0;
-   enum
-   {
-      SkipNl,
-      ParseLine,
-      WhiteSpace,
-      MountPoint,
-   } state = SkipNl;
-   int token = 0;
-   buffer mountPt = {0};
-#if defined(__sun__)
-   const int desiredToken = 0;
-   state = MountPoint;
-#else
-   const int desiredToken = 5;
-#endif
+   struct statfs buf;
+   char *p = NULL;
 
-   // Very hacky, but running "df %s" seems to reliably give us mount points
-   // across several operating systems.
-   //
-   spawn_to_pipe(err, &fd, "df", path, NULL);
+   if (statfs(path, &buf))
+      ERROR_SET(err, errno, errno);
+
+   p = get_fs_type_statfs(&buf, err);
    ERROR_CHECK(err);
 
-   while ((r = read(fd, buf, sizeof(buf))) > 0)
-   {
-      int i = 0;
-   retry:
-      switch (state)
-      {
-      case SkipNl:
-         for (; i<r; ++i)
-         {
-            if (buf[i] == '\n')
-            {
-               state = ParseLine;
-               i++;
-               goto retry;
-            }
-         }
-         break;
-      case ParseLine:
-         for (; i<r; ++i)
-         {
-            if (isspace(buf[i]))
-            {
-               token++;
-               i++;
-               state = WhiteSpace;
-               goto retry;
-            }
-         }
-         break;
-      case WhiteSpace:
-         for (; i<r; ++i)
-         {
-            if (!isspace(buf[i]))
-            {
-               state = (token == desiredToken) ? MountPoint : ParseLine;
-               goto retry;
-            }
-         }
-         break;
-      case MountPoint:
-         for (; i<r; ++i)
-         {
-            if (buf[i] == '\n')
-               goto done;
+exit:
+   return p;
+}
 
-            if (!buffer_append(&mountPt, buf+i, 1))
-               ERROR_SET(err, nomem);
-         }
-         break;
-      }
-   }
+char *
+get_fs_type_fd(int fd, error *err)
+{
+   struct statfs buf;
+   char *p = NULL;
 
-done:
+   if (fstatfs(fd, &buf))
+      ERROR_SET(err, errno, errno);
 
-   if (!BUFFER_NBYTES(&mountPt))
-      ERROR_SET(err, unknown, "Could not find mount point");
-
-   buf[0] = 0;
-   if (!buffer_append(&mountPt, buf, 1))
-      ERROR_SET(err, nomem);
-
-#if defined(__sun__)
-   {
-      char *p = strstr(BUFFER_PTR(&mountPt), "  (");
-      if (p)
-         *p = 0;
-   }
-#endif
+   p = get_fs_type_statfs(&buf, err);
+   ERROR_CHECK(err);
 
 exit:
-   if (fd >= 0)
-      close(fd);
-   if (ERROR_FAILED(err))
-   {
-      buffer_destroy(&mountPt);
-      return NULL;
-   }
-   return BUFFER_PTR(&mountPt);
+   return p;
 }
 
 #endif
@@ -362,10 +255,18 @@ get_fs_type(const char *path, error *err)
    error_set_errno(err, ENOSYS);
 }
 
+char *
+get_fs_type_fd(int fd, error *err)
+{
+   // TODO
+   error_set_errno(err, ENOSYS);
+}
+
 #endif
 
+static
 bool
-path_is_remote(const char *path, error *err)
+fs_type_is_remote(const char *fstype, error *err)
 {
    bool r = false;
    // TODO: consider parsing /etc/dfs/fstypes on Solaris
@@ -378,28 +279,63 @@ path_is_remote(const char *path, error *err)
       NULL
    };
    const char **remote_fs = remote_filesystems;
-   char *fs = get_fs_type(path, err);
-
-   ERROR_CHECK(err);
 
    for (; *remote_fs; ++remote_fs)
    {
-      if (!strcmp(*remote_fs, fs))
+      if (!strcmp(*remote_fs, fstype))
       {
          r = true;
          break;
       }
    }
 
+   return r;
+}
+
+bool
+path_is_remote(const char *path, error *err)
+{
+   char *fs = NULL;
+   bool r = false;
+
+   fs = get_fs_type(path, err);
+   ERROR_CHECK(err);
+
+   r = fs_type_is_remote(fs, err);
+   ERROR_CHECK(err);
+
 exit:
    free(fs);
    return r;
 }
 
-#else
+bool
+fd_is_remote(int fd, error *err)
+{
+   char *fs = NULL;
+   bool r = false;
+
+   fs = get_fs_type_fd(fd, err);
+   ERROR_CHECK(err);
+
+   r = fs_type_is_remote(fs, err);
+   ERROR_CHECK(err);
+
+exit:
+   free(fs);
+   return r;
+}
+
+#else // Windows
 
 bool
 path_is_remote(const char *path, error *err)
+{
+   return false;
+}
+
+bool
+fd_is_remote(HANDLE fd, error *err)
 {
    return false;
 }
