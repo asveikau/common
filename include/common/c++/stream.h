@@ -16,11 +16,22 @@
 
 namespace common {
 
+struct StreamInfo
+{
+   bool IsRemote;
+   bool FileSizeKnown;
+
+   StreamInfo() : IsRemote(false), FileSizeKnown(true)
+   {
+   }
+};
+
 struct StreamBase : public RefCountable
 {
    virtual uint64_t GetSize(error *err) = 0;
    virtual void Flush(error *err) {}
    virtual void Truncate(uint64_t length, error *err);
+   virtual void GetStreamInfo(StreamInfo *, error *err) {}
 };
 
 struct Stream : public StreamBase

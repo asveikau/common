@@ -8,6 +8,7 @@
 
 #include <common/c++/stream.h>
 #include <common/c++/new.h>
+#include <common/path.h>
 #include <common/misc.h>
 
 #if defined(_WINDOWS)
@@ -128,6 +129,14 @@ struct WinPStream : public common::PStream
          ERROR_SET(err, win32, GetLastError());
    exit:;
    }
+
+   void
+   GetStreamInfo(common::StreamInfo *info, error *err)
+   {
+      info->IsRemote = fd_is_remote(handle, err);
+      ERROR_CHECK(err);
+   exit:;
+   }
 };
 
 typedef WinPStream PlatformPStream;
@@ -204,6 +213,14 @@ struct UnixPStream : public common::PStream
    {
       if (ftruncate(fd, length))
          ERROR_SET(err, errno, errno);
+   exit:;
+   }
+
+   void
+   GetStreamInfo(common::StreamInfo *info, error *err)
+   {
+      info->IsRemote = fd_is_remote(fd, err);
+      ERROR_CHECK(err);
    exit:;
    }
 };

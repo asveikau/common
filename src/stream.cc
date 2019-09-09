@@ -7,6 +7,7 @@
 */
 
 #include <common/c++/stream.h>
+#include <common/path.h>
 #include <errno.h>
 #include <new>
 
@@ -68,8 +69,11 @@ public:
 
 #if _WINDOWS
    HANDLE GetHandle() { return (HANDLE)_get_osfhandle(_fileno(f_)); }
+   HANDLE GetFd()     { return GetHandle(); }
 #elif defined(HAVE_FILENO)
    int GetFd()        { return fileno(f_); }
+#else
+   int GetFd()        { return -1; }
 #endif
 
    uint64_t GetSize(error *err)
@@ -170,6 +174,17 @@ public:
       ERROR_SET(err, errno, ENOSYS);
 #endif
    exit:;
+   }
+
+   void GetStreamInfo(StreamInfo *info, error *err)
+   {
+      auto fd = GetFd();
+#if !defined(_WINDOWS)
+      if (fd != -1)
+#endif
+      {
+         info->IsRemote = fd_is_remote(fd, err);
+      }
    }
 };
 
