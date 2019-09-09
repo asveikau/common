@@ -318,17 +318,6 @@ exit:
 }
 
 void
-common::PStream::Truncate(uint64_t length, error *err)
-{
-#if defined(_WINDOWS)
-   ERROR_SET(err, win32, ERROR_ACCESS_DENIED);
-#else
-   ERROR_SET(err, errno, EACCES);
-#endif
-exit:;
-}
-
-void
 common::PStream::ToStream(common::Stream **out, error *err)
 {
    common::Pointer<StreamWrapper> r;

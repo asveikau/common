@@ -41,7 +41,7 @@ exit:
 }
 
 void
-common::Stream::Truncate(uint64_t length, error *err)
+common::StreamBase::Truncate(uint64_t length, error *err)
 {
 #if defined(_WINDOWS)
    ERROR_SET(err, win32, ERROR_ACCESS_DENIED);

@@ -16,15 +16,19 @@
 
 namespace common {
 
-struct Stream : public RefCountable
+struct StreamBase : public RefCountable
 {
    virtual uint64_t GetSize(error *err) = 0;
+   virtual void Flush(error *err) {}
+   virtual void Truncate(uint64_t length, error *err);
+};
+
+struct Stream : public StreamBase
+{
    virtual uint64_t GetPosition(error *err) = 0;
    virtual void Seek(int64_t pos, int whence, error *err) = 0;
    virtual int Read(void *buf, int len, error *err) = 0;
    virtual int Write(const void *buf, int len, error *err);
-   virtual void Flush(error *err) {}
-   virtual void Truncate(uint64_t length, error *err);
 };
 
 enum OpenMode
@@ -62,13 +66,10 @@ CreateStream(FILE *f, Stream **out, error *err);
 
 // Like Stream, but following the model of pread().
 //
-struct PStream : public RefCountable
+struct PStream : public StreamBase
 {
-   virtual uint64_t GetSize(error *err) = 0;
    virtual int Read(void *buf, int len, uint64_t pos, error *err) = 0;
    virtual int Write(const void *buf, int len, uint64_t pos, error *err);
-   virtual void Flush(error *err) {}
-   virtual void Truncate(uint64_t length, error *err);
 
    void ToStream(Stream** out, error *err);
 };
