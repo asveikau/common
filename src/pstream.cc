@@ -318,6 +318,12 @@ struct StreamWrapper : public common::Stream
    {
       stream->Truncate(length, err);
    }
+
+   void
+   GetStreamInfo(common::StreamInfo *info, error *err)
+   {
+      stream->GetStreamInfo(info, err);
+   }
 };
 
 } // end namespace
