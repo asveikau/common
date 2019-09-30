@@ -34,12 +34,15 @@ struct StreamBase : public RefCountable
    virtual void GetStreamInfo(StreamInfo *, error *err) {}
 };
 
+struct PStream;
+
 struct Stream : public StreamBase
 {
    virtual uint64_t GetPosition(error *err) = 0;
    virtual void Seek(int64_t pos, int whence, error *err) = 0;
    virtual int Read(void *buf, int len, error *err) = 0;
    virtual int Write(const void *buf, int len, error *err);
+   virtual void ToPStream(PStream **out, error *err);
 };
 
 enum OpenMode
@@ -82,7 +85,7 @@ struct PStream : public StreamBase
    virtual int Read(void *buf, int len, uint64_t pos, error *err) = 0;
    virtual int Write(const void *buf, int len, uint64_t pos, error *err);
 
-   void ToStream(Stream** out, error *err);
+   virtual void ToStream(Stream** out, error *err);
 };
 
 void

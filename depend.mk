@@ -75,7 +75,7 @@ $(LIBCOMMON_ROOT)src/pstream.o: $(LIBCOMMON_ROOT)src/pstream.cc $(LIBCOMMON_ROOT
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/scheduler.o: $(LIBCOMMON_ROOT)src/scheduler.cc $(LIBCOMMON_ROOT)include/common/c++/scheduler.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/sem.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/stream.o: $(LIBCOMMON_ROOT)src/stream.cc $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h $(LIBCOMMON_ROOT)include/common/refcnt.h
+$(LIBCOMMON_ROOT)src/stream.o: $(LIBCOMMON_ROOT)src/stream.cc $(LIBCOMMON_ROOT)include/common/c++/new.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h $(LIBCOMMON_ROOT)include/common/refcnt.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/thread-cpp.o: $(LIBCOMMON_ROOT)src/thread-cpp.cc $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/thread.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<

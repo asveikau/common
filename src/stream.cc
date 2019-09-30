@@ -7,6 +7,7 @@
 */
 
 #include <common/c++/stream.h>
+#include <common/c++/new.h>
 #include <common/path.h>
 #include <errno.h>
 #include <new>
@@ -443,4 +444,78 @@ common::CreateStream(
 
    CreateStream(filename, modeString, out, err);
 exit:;
+}
+
+namespace {
+
+struct StreamWrapper : public common::PStream
+{
+   common::Pointer<common::Stream> stream;
+
+   uint64_t GetSize(error *err)     { return stream->GetSize(err); }
+   void Flush(error *err)           { stream->Flush(err); }
+
+   int
+   Read(void *buf, int len, uint64_t pos, error *err)
+   {
+      int r = 0;
+
+      stream->Seek(pos, SEEK_SET, err);
+      ERROR_CHECK(err);
+
+      r = stream->Read(buf, len, err);
+      ERROR_CHECK(err);
+   exit:
+      return r;
+   }
+
+   int
+   Write(const void *buf, int len, uint64_t pos, error *err)
+   {
+      int r = 0;
+
+      stream->Seek(pos, SEEK_SET, err);
+      ERROR_CHECK(err);
+
+      r = stream->Write(buf, len, err);
+      ERROR_CHECK(err);
+   exit:
+      return r;
+   }
+
+   void
+   Truncate(uint64_t length, error *err)
+   {
+      stream->Truncate(length, err);
+   }
+
+   void
+   GetStreamInfo(common::StreamInfo *info, error *err)
+   {
+      stream->GetStreamInfo(info, err);
+   }
+
+   void
+   ToStream(common::Stream **stream, error *err)
+   {
+      (*stream = this->stream.Get())->AddRef();
+   }
+};
+
+} // end namespace
+
+void
+common::Stream::ToPStream(PStream **out, error *err)
+{
+   common::Pointer<StreamWrapper> r;
+
+   New(r.GetAddressOf(), err);
+   ERROR_CHECK(err);
+
+   r->stream = this;
+
+exit:
+   if (ERROR_FAILED(err))
+      r = nullptr;
+   *out = r.Detach();
 }

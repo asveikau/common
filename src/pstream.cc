@@ -324,6 +324,12 @@ struct StreamWrapper : public common::Stream
    {
       stream->GetStreamInfo(info, err);
    }
+
+   void
+   ToPStream(common::PStream **stream, error *err)
+   {
+      (*stream = this->stream.Get())->AddRef();
+   }
 };
 
 } // end namespace
