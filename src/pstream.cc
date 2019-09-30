@@ -361,3 +361,99 @@ exit:
       r = nullptr;
    *out = r.Detach();
 }
+
+namespace {
+
+struct SubstreamWrapper : public common::PStream
+{
+   common::Pointer<common::PStream> baseStream;
+   uint64_t pos;
+   uint64_t len;
+
+   uint64_t GetSize(error *err) { return len; }
+   void Flush(error *err)       { baseStream->Flush(err); }
+   void Truncate(uint64_t length, error *err)
+   {
+      if (len < length)
+         ERROR_SET(err, unknown, "Can't truncate beyond substream bounds");
+      len = length;
+   exit:;
+   }
+   void GetStreamInfo(common::StreamInfo *info, error *err) {baseStream->GetStreamInfo(info, err); }
+
+   void
+   Translate(uint64_t &callerPos, int &callerLen, error *err)
+   {
+      callerLen = MIN(len - callerPos, callerLen);
+      callerPos += pos;
+   }
+
+   int Read(void *buf, int len, uint64_t pos, error *err)
+   {
+      int r = 0;
+      Translate(pos, len, err);
+      ERROR_CHECK(err);
+      r = baseStream->Read(buf, len, pos, err);
+      ERROR_CHECK(err);
+   exit:
+      return r;
+   }
+
+   int Write(const void *buf, int len, uint64_t pos, error *err)
+   {
+      int r = 0;
+      Translate(pos, len, err);
+      ERROR_CHECK(err);
+      r = baseStream->Write(buf, len, pos, err);
+      ERROR_CHECK(err);
+   exit:
+      return r;
+   }
+
+   void
+   ToStream(common::Stream **stream, error *err)
+   {
+      common::Pointer<common::Stream> wrapped;
+
+      baseStream->ToStream(wrapped.GetAddressOf(), err);
+      ERROR_CHECK(err);
+      wrapped->Substream(this->pos, this->len, stream, err);
+      ERROR_CHECK(err);
+   exit:;
+   }
+
+   void Substream(uint64_t pos, uint64_t len, PStream **out, error *err)
+   {
+      if (pos > this->len || pos + len > this->len)
+         ERROR_SET(err, unknown, "Substream out of bounds");
+      baseStream->Substream(this->pos + pos, len, out, err);
+      ERROR_CHECK(err);
+   exit:;
+   }
+};
+
+} // end namepsace
+
+void
+common::PStream::Substream(uint64_t pos, uint64_t len, PStream **out, error *err)
+{
+   common::Pointer<SubstreamWrapper> wrapped;
+   uint64_t size = this->GetSize(err);
+
+   ERROR_CHECK(err);
+
+   if (pos > size || pos+len > size)
+      ERROR_SET(err, unknown, "Substream out of bounds");
+
+   common::New(wrapped, err);
+   ERROR_CHECK(err);
+
+   wrapped->baseStream = this;
+   wrapped->pos = pos;
+   wrapped->len = len;
+
+exit:
+   if (ERROR_FAILED(err))
+      wrapped = nullptr;
+   *out = wrapped.Detach();
+}

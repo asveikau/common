@@ -519,3 +519,136 @@ exit:
       r = nullptr;
    *out = r.Detach();
 }
+
+namespace {
+
+struct SubstreamWrapper : public common::Stream
+{
+   common::Pointer<common::Stream> baseStream;
+   uint64_t pos;
+   uint64_t len;
+   uint64_t virtualPos;
+
+   uint64_t GetSize(error *err) { return len; }
+   void Flush(error *err)       { baseStream->Flush(err); }
+   void Truncate(uint64_t length, error *err)
+   {
+      if (len < length)
+         ERROR_SET(err, unknown, "Can't truncate beyond substream bounds");
+      len = length;
+   exit:;
+   }
+   void GetStreamInfo(common::StreamInfo *info, error *err) {baseStream->GetStreamInfo(info, err); }
+
+   void Seek(int64_t pos, int whence, error *err)
+   {
+      switch (whence)
+      {
+      case SEEK_SET:
+         break;
+      case SEEK_CUR:
+         Seek(virtualPos + pos, SEEK_SET, err);
+         return;
+      case SEEK_END:
+         Seek(len + pos, SEEK_SET, err);
+         return;
+      default:
+         ERROR_SET(err, unknown, "Bad seek whence");
+      }
+
+      // Set pos...
+      //
+      this->virtualPos = MIN(len, MAX(0LL, pos));
+   exit:;
+   }
+
+   uint64_t GetPosition(error *err)
+   {
+      return virtualPos;
+   }
+
+   void
+   Translate(uint64_t &callerPos, int &callerLen, error *err)
+   {
+      callerLen = MIN(len - callerPos, callerLen);
+      callerPos += pos;
+   }
+
+   int Read(void *buf, int len, error *err)
+   {
+      int r = 0;
+      auto pos = virtualPos;
+      Translate(pos, len, err);
+      ERROR_CHECK(err);
+      baseStream->Seek(pos, SEEK_SET, err);
+      ERROR_CHECK(err);
+      r = baseStream->Read(buf, len, err);
+      ERROR_CHECK(err);
+      virtualPos += r;
+   exit:
+      return r;
+   }
+
+   int Write(const void *buf, int len, error *err)
+   {
+      int r = 0;
+      auto pos = virtualPos;
+      Translate(pos, len, err);
+      ERROR_CHECK(err);
+      baseStream->Seek(pos, SEEK_SET, err);
+      ERROR_CHECK(err);
+      r = baseStream->Write(buf, len, err);
+      ERROR_CHECK(err);
+      virtualPos += r;
+   exit:
+      return r;
+   }
+
+   void
+   ToPStream(common::PStream **stream, error *err)
+   {
+      common::Pointer<common::PStream> wrapped;
+
+      baseStream->ToPStream(wrapped.GetAddressOf(), err);
+      ERROR_CHECK(err);
+      wrapped->Substream(this->pos, this->len, stream, err);
+      ERROR_CHECK(err);
+   exit:;
+   }
+
+   void Substream(uint64_t pos, uint64_t len, Stream **out, error *err)
+   {
+      if (pos > this->len || pos + len > this->len)
+         ERROR_SET(err, unknown, "Substream out of bounds");
+      baseStream->Substream(this->pos + pos, len, out, err);
+      ERROR_CHECK(err);
+   exit:;
+   }
+};
+
+} // end namepsace
+
+void
+common::Stream::Substream(uint64_t pos, uint64_t len, Stream **out, error *err)
+{
+   common::Pointer<SubstreamWrapper> wrapped;
+   uint64_t size = this->GetSize(err);
+
+   ERROR_CHECK(err);
+
+   if (pos > size || pos+len > size)
+      ERROR_SET(err, unknown, "Substream out of bounds");
+
+   common::New(wrapped, err);
+   ERROR_CHECK(err);
+
+   wrapped->baseStream = this;
+   wrapped->pos = pos;
+   wrapped->len = len;
+   wrapped->virtualPos = 0;
+
+exit:
+   if (ERROR_FAILED(err))
+      wrapped = nullptr;
+   *out = wrapped.Detach();
+}
