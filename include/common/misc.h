@@ -26,6 +26,7 @@
 
 #if defined(_WINDOWS)
 #define strtoull _strtoui64
+#define strtoll  _strtoi64
 #endif
 
 #if defined(__cplusplus)
