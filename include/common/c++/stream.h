@@ -13,6 +13,7 @@
 #include "refcount.h"
 #include <stdio.h>
 #include <stdint.h>
+#include <functional>
 
 namespace common {
 
@@ -97,6 +98,68 @@ CreateStream(
    PStream **out,
    error *err
 );
+
+struct MemoryStreamBuffer
+{
+   virtual void *GetBuffer();
+   virtual size_t GetSize();
+   virtual void Resize(size_t sz, error *err);
+   virtual ~MemoryStreamBuffer();
+
+   bool Writeable;
+
+   MemoryStreamBuffer();
+   MemoryStreamBuffer(const MemoryStreamBuffer&) = delete;
+};
+
+void
+CreateMemoryStreamBufferConst(
+   const void *buf,
+   size_t len,
+   const std::function<void(void *)> &freeFn,
+   MemoryStreamBuffer *&obj,
+   error *err
+);
+
+inline void
+CreateMemoryStreamBufferConst(
+   const void *buf,
+   size_t len,
+   MemoryStreamBuffer *&obj,
+   error *err
+)
+{
+   CreateMemoryStreamBufferConst(buf, len, std::function<void(void*)>(), obj, err);
+}
+
+void
+CreateMemoryStreamBuffer(
+   size_t initialSize,
+   MemoryStreamBuffer *&obj,
+   error *err
+);
+
+enum MemoryStreamLockSheme
+{
+   NoSynchronization,
+   SingleWriter,
+   MultipleWriter,
+};
+
+void
+CreateMemoryStream(
+   MemoryStreamBuffer *&buf,
+   MemoryStreamLockSheme locking,
+   PStream **out,
+   error *err
+);
+
+inline void
+CreateMemoryStream(MemoryStreamLockSheme locking, PStream **out, error *err)
+{
+   MemoryStreamBuffer *buf = nullptr;
+   CreateMemoryStream(buf, locking, out, err);
+}
 
 } // namespace
 

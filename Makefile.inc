@@ -36,6 +36,7 @@ LIBCOMMON_SRC:=\
    \
    $(LIBCOMMON_ROOT)src/pstream.cc \
    $(LIBCOMMON_ROOT)src/stream.cc \
+   $(LIBCOMMON_ROOT)src/memorystream.cc \
    $(LIBCOMMON_ROOT)src/scheduler.cc \
    $(LIBCOMMON_ROOT)src/thread-cpp.cc \
    $(LIBCOMMON_ROOT)src/worker.cc \
