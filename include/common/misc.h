@@ -29,10 +29,6 @@
 #define strtoll  _strtoi64
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #ifndef MIN
 #define MIN(X, Y)    (((X) < (Y)) ? (X) : (Y))
 #endif
@@ -41,8 +37,17 @@ extern "C" {
 #define MAX(X, Y)    (((X) > (Y)) ? (X) : (Y))
 #endif
 
-#ifndef ARRAY_SIZE
+#if !defined(ARRAY_SIZE)
+#if defined(__cplusplus)
+namespace common { namespace internal
+{
+   template<class T, size_t N>
+   char (&SizeHelper(T (&arr)[N]))[N];
+} } // end namespace
+#define ARRAY_SIZE(X) sizeof(common::internal::SizeHelper(X))
+#else
 #define ARRAY_SIZE(X) (sizeof(X)/sizeof(*X))
+#endif
 #endif
 
 #if defined(__cplusplus)
@@ -57,6 +62,10 @@ extern "C" {
 
 #ifndef FIELD_OFFSET
 #define FIELD_OFFSET(type, memb) ((intptr_t)(&((type*)0)->memb))
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 #if defined(__linux__) || defined(__APPLE__)
