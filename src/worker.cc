@@ -38,8 +38,8 @@ common::WorkerThreadBase::Drain(std::function<void(void)> *funcs, int nfuncs)
    {
       locker lock;
       lock.acquire(producerMutex);
-      r = queue.Read(funcs, ARRAY_SIZE(funcs));
-      int n = ARRAY_SIZE(funcs) - r;
+      r = queue.Read(funcs, nfuncs);
+      int n = nfuncs - r;
       auto p = funcs + r;
       while (n && slowQueueHead)
       {
