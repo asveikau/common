@@ -61,11 +61,18 @@ LIBCOMMON_SRC+=\
    $(LIBCOMMON_ROOT)src/error-winnt.c \
    $(LIBCOMMON_ROOT)src/winutf.c \
    $(LIBCOMMON_ROOT)src/winuname.c \
-   $(LIBCOMMON_ROOT)src/getopt.c \
    $(LIBCOMMON_ROOT)src/asprintf.c
+USE_BSD_GETOPT:=y
 else
 LIBCOMMON_SRC+=\
    $(LIBCOMMON_ROOT)src/exec.c
+endif
+
+ifdef USE_BSD_GETOPT
+BSD_GETOPT_DESCR:=Berkeley getopt(3)
+LIB_DESCRS+=BSD_GETOPT_DESCR
+LIBCOMMON_SRC+=\
+   $(LIBCOMMON_ROOT)src/getopt.c
 endif
 
 ifeq ($(PLATFORM), linux)
