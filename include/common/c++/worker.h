@@ -43,16 +43,17 @@ protected:
    virtual bool IsOnThread(void) = 0;
    virtual void Signal(error *err) = 0;
 
+   void
+   ScheduleImpl(
+      std::function<void(error*)> func,
+      bool synchronous,
+      error *err,
+      error *asyncErr
+   );
+
 public:
    WorkerThreadBase();
    ~WorkerThreadBase();
-
-   void Schedule(
-      std::function<void(error*)> func,
-      bool synchronous = false,
-      error *err = nullptr,
-      error *asyncErr = nullptr
-   );
 };
 
 class WorkerThread : public WorkerThreadBase

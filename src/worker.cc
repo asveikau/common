@@ -112,7 +112,7 @@ common::WorkerThreadBase::PrepFunction(
 }
 
 void
-common::WorkerThreadBase::Schedule(
+common::WorkerThreadBase::ScheduleImpl(
    std::function<void(error *err)> fn,
    bool synchronous,
    error *err,

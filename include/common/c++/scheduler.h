@@ -19,12 +19,27 @@ struct Scheduler
    Scheduler() {}
    Scheduler(const Scheduler &p) = delete;
    virtual ~Scheduler();
-   virtual void Schedule(
+
+   void
+   Schedule(
       std::function<void(error*)> func,
-      bool synchronous = false,
+      bool synchronous,
+      error *err,
+      error *asyncErr = nullptr
+   )
+   {
+      ScheduleImpl(func, false, err, asyncErr);
+   }
+
+   void
+   Schedule(
+      std::function<void(error*)> func,
       error *err = nullptr,
       error *asyncErr = nullptr
-   ) = 0;
+   )
+   {
+      ScheduleImpl(func, false, err, asyncErr);
+   }
 
    static void
    ScheduleSyncViaAsync(
@@ -32,6 +47,17 @@ struct Scheduler
       std::function<void(std::function<void(error*)>, error *)> schedule,
       error *err
    );
+
+protected:
+
+   virtual void
+   ScheduleImpl(
+      std::function<void(error*)> func,
+      bool synchronous,
+      error *err,
+      error *asyncErr = nullptr
+   ) = 0;
+
 };
 
 } // end namespace
