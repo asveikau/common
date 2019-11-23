@@ -28,7 +28,7 @@ struct Scheduler
       error *asyncErr = nullptr
    )
    {
-      ScheduleImpl(func, false, err, asyncErr);
+      ScheduleImpl(func, synchronous, err, asyncErr);
    }
 
    void
