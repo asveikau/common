@@ -30,7 +30,7 @@ class WorkerThreadBase : public Scheduler
    void Cleanup();
 
    std::function<void(void)>
-   PrepFunction(std::function<void(error*)> fn, error *asyncErr);
+   PrepFunction(const std::function<void(error*)> &fn, error *asyncErr);
 
    void Write(std::function<void(void)> &fn, error *err);
    void SlowQueueChomp();
@@ -45,7 +45,7 @@ protected:
 
    void
    ScheduleImpl(
-      std::function<void(error*)> func,
+      const std::function<void(error*)> &func,
       bool synchronous,
       error *err,
       error *asyncErr

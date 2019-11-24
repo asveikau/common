@@ -17,8 +17,8 @@ common::Scheduler::~Scheduler()
 
 void
 common::Scheduler::ScheduleSyncViaAsync(
-   std::function<void(error*)> fn,
-   std::function<void(std::function<void(error*)>, error *)> scheduler,
+   const std::function<void(error*)> &fn,
+   std::function<void(const std::function<void(error*)> &, error *)> scheduler,
    error *err
 )
 {

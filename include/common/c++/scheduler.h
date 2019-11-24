@@ -22,7 +22,7 @@ struct Scheduler
 
    void
    Schedule(
-      std::function<void(error*)> func,
+      const std::function<void(error*)> &func,
       bool synchronous,
       error *err,
       error *asyncErr = nullptr
@@ -33,7 +33,7 @@ struct Scheduler
 
    void
    Schedule(
-      std::function<void(error*)> func,
+      const std::function<void(error*)> &func,
       error *err = nullptr,
       error *asyncErr = nullptr
    )
@@ -43,8 +43,8 @@ struct Scheduler
 
    static void
    ScheduleSyncViaAsync(
-      std::function<void(error*)> func,
-      std::function<void(std::function<void(error*)>, error *)> schedule,
+      const std::function<void(error*)> &func,
+      std::function<void(const std::function<void(error*)> &, error *)> schedule,
       error *err
    );
 
@@ -52,7 +52,7 @@ protected:
 
    virtual void
    ScheduleImpl(
-      std::function<void(error*)> func,
+      const std::function<void(error*)> &func,
       bool synchronous,
       error *err,
       error *asyncErr = nullptr

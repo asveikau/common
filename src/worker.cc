@@ -97,7 +97,7 @@ exit:;
 
 std::function<void(void)>
 common::WorkerThreadBase::PrepFunction(
-   std::function<void(error*)> fn,
+   const std::function<void(error*)> &fn,
    error *asyncErr
 )
 {
@@ -113,7 +113,7 @@ common::WorkerThreadBase::PrepFunction(
 
 void
 common::WorkerThreadBase::ScheduleImpl(
-   std::function<void(error *err)> fn,
+   const std::function<void(error *err)> &fn,
    bool synchronous,
    error *err,
    error *asyncErr
@@ -142,7 +142,7 @@ common::WorkerThreadBase::ScheduleImpl(
       {
          ScheduleSyncViaAsync(
             fn,
-            [this] (std::function<void(error*)> fn, error *err) -> void
+            [this] (const std::function<void(error*)> &fn, error *err) -> void
             {
                Schedule(fn, false, err, err);
             },
