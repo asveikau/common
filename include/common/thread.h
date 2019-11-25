@@ -72,7 +72,7 @@ namespace common
 {
    void
    create_thread(
-      std::function<void(void)> fn,
+      const std::function<void(void)> &fn,
       thread_id *id_out,
       error *err
    );

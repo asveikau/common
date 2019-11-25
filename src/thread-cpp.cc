@@ -27,7 +27,7 @@ ThreadProc(void *arg)
 
 void
 common::create_thread(
-   std::function<void(void)> fn,
+   const std::function<void(void)> &fn,
    thread_id *idOut,
    error *err
 )
