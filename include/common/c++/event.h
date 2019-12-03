@@ -72,7 +72,8 @@ public:
       while (q)
       {
          auto r = q->next;
-         q->fn(p..., err);
+         auto fn = q->fn;
+         fn(p..., err);
          ERROR_CHECK(err);
          q = r;
       }
