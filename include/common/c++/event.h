@@ -28,7 +28,7 @@ class Event
       std::function<void(T..., error *err)> fn;
       struct node *next;
 
-      node(std::function<void(T..., error*)> &fn_) : fn(fn_), next(nullptr)
+      node(const std::function<void(T..., error*)> &fn_) : fn(fn_), next(nullptr)
       {
       }
    };
@@ -82,12 +82,12 @@ public:
 
    typedef std::function<void()> UnsubscribeFunc;
 
-   UnsubscribeFunc Subscribe(std::function<void(T...)> cb, error *err)
+   UnsubscribeFunc Subscribe(const std::function<void(T...)> &cb, error *err)
    {
       return Subscribe([cb] (T... arg, error *ignored) -> void { cb(arg...); }, err);
    }
 
-   UnsubscribeFunc Subscribe(std::function<void(T..., error*)> cb, error *err)
+   UnsubscribeFunc Subscribe(const std::function<void(T..., error*)> &cb, error *err)
    {
       node *p = nullptr;
       bool tracked = false;
@@ -116,10 +116,13 @@ public:
          if (p) delete p;
          if (tracked)
             --tracker->refCount;
-         return nullptr;
+         return UnsubscribeFunc();
       }
-      return [this, p] () -> void
+      return [this, p] () mutable -> void
       {
+         if (!p)
+            return;
+
          node *prev = nullptr;
          auto q = head;
 
@@ -130,7 +133,7 @@ public:
          }
 
          if (p != q)
-            goto exit;
+            return;
 
          if (prev)
             prev->next = p->next;
@@ -140,8 +143,8 @@ public:
          if (tail == &p->next)
             tail = prev ? &prev->next : &head;
 
-      exit:
          delete p;
+         p = nullptr;
          if (tracker && !(--tracker->refCount))
          {
             error err;
