@@ -34,6 +34,7 @@ LIBCOMMON_SRC:=\
    $(LIBCOMMON_ROOT)src/utf8dec.c \
    $(LIBCOMMON_ROOT)src/utf8enc.c \
    \
+   $(LIBCOMMON_ROOT)src/dtorqueue.cc \
    $(LIBCOMMON_ROOT)src/pstream.cc \
    $(LIBCOMMON_ROOT)src/stream.cc \
    $(LIBCOMMON_ROOT)src/memorystream.cc \

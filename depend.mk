@@ -71,6 +71,8 @@ $(LIBCOMMON_ROOT)src/winuname.o: $(LIBCOMMON_ROOT)src/winuname.c $(LIBCOMMON_ROO
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/winutf.o: $(LIBCOMMON_ROOT)src/winutf.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
+$(LIBCOMMON_ROOT)src/dtorqueue.o: $(LIBCOMMON_ROOT)src/dtorqueue.cc $(LIBCOMMON_ROOT)include/common/c++/dtorqueue.h $(LIBCOMMON_ROOT)include/common/error.h
+	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/memorystream.o: $(LIBCOMMON_ROOT)src/memorystream.cc $(LIBCOMMON_ROOT)include/common/c++/lock.h $(LIBCOMMON_ROOT)include/common/c++/new.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/refcnt.h $(LIBCOMMON_ROOT)include/common/thread.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/pstream.o: $(LIBCOMMON_ROOT)src/pstream.cc $(LIBCOMMON_ROOT)include/common/c++/new.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h $(LIBCOMMON_ROOT)include/common/refcnt.h
