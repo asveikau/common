@@ -12,6 +12,10 @@
 #include <common/thread.h>
 #include <functional>
 #include <mutex>
+#include <version>
+#if defined(__cpp_lib_shared_mutex)
+#include <shared_mutex>
+#endif
 #include <new>
 
 namespace common {
@@ -71,6 +75,30 @@ public:
          q.unlock();
       });
    }
+
+#if defined(__cpp_lib_shared_mutex)
+   void acquire(std::shared_mutex &m)
+   {
+      release();
+      m.lock();
+      acquire(&m, [] (void* p) -> void
+      {
+         auto &q = *(std::shared_mutex*)p;
+         q.unlock();
+      });
+   }
+
+   void acquire_shared(std::shared_mutex &m)
+   {
+      release();
+      m.lock_shared();
+      acquire(&m, [] (void* p) -> void
+      {
+         auto &q = *(std::shared_mutex*)p;
+         q.unlock_shared();
+      });
+   }
+#endif
 
 #if defined(_WINDOWS)
    void acquire(PCRITICAL_SECTION lock)
