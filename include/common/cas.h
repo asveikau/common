@@ -11,12 +11,14 @@
 
 #if defined(_WINDOWS)
 #include <windows.h>
-static
 #if defined(__cplusplus)
-inline
+#define CAS_INLINE inline
 #else
-__declspec(inline)
+#define CAS_INLINE __declspec(inline)
 #endif
+
+static
+CAS_INLINE
 int
 compare_and_swap(
    volatile unsigned long *ptr,
@@ -26,11 +28,24 @@ compare_and_swap(
 {
    return InterlockedCompareExchange(ptr, value, comparand) == comparand;
 }
+static
+CAS_INLINE
+int
+compare_and_swap_pointer(
+   void *volatile *ptr,
+   void *comparand,
+   void *value
+   )
+{
+   return InterlockedCompareExchangePointer(ptr, value, comparand) == comparand;
+}
 #define memory_barrier MemoryBarrier
+#undef CAS_INLINE
 #elif \
    (defined(__GNUC__) && \
       !(__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2)))
 #define compare_and_swap __sync_bool_compare_and_swap
+#define compare_and_swap_pointer compare_and_swap
 #define memory_barrier __sync_synchronize
 #elif defined(__arm__) && defined(__GNUC__)
 static __inline__ int
@@ -51,6 +66,8 @@ compare_and_swap(
      : "memory", "cc");
    return r;
 }
+#define compare_and_swap_pointer(PTR, CMP, VAL) \
+   compare_and_swap((volatile unsigned long *)(PTR), (unsigned long)(CMP), (unsigned long)(VAL))
 #define memory_barrier() asm __volatile__("dmb\n" ::: "memory")
 #elif defined(__ppc__) && defined(__GNUC__)
 static __inline__ int
@@ -74,6 +91,8 @@ compare_and_swap(
      : "memory", "cc");
    return r;
 }
+#define compare_and_swap_pointer(PTR, CMP, VAL) \
+   compare_and_swap((volatile unsigned long *)(PTR), (unsigned long)(CMP), (unsigned long)(VAL))
 #define memory_barrier() asm __volatile__("lwsync\n" ::: "memory")
 #else
 #error Not ported yet.
