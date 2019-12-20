@@ -89,6 +89,17 @@ public:
    {
       return *this = ptr.ptr;
    }
+
+   Pointer<T> & operator =(Pointer<T> &&ptr)
+   {
+      if (&ptr != this)
+      {
+         Release();
+         this->ptr = ptr.ptr;
+         ptr.ptr = nullptr;
+      }
+      return *this;
+   }
 };
 
 } // namespace
