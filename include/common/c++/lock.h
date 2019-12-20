@@ -12,11 +12,18 @@
 #include <common/thread.h>
 #include <functional>
 #include <mutex>
+#include <new>
+
+#if defined(_MSC_VER)
+#if !defined(__cpp_lib_shared_mutex) && _MSC_VER >= 1400
+#define __cpp_lib_shared_mutex 1
+#endif // vs2015
+#else // not MSC
 #include <version>
+#endif
 #if defined(__cpp_lib_shared_mutex)
 #include <shared_mutex>
 #endif
-#include <new>
 
 namespace common {
 
