@@ -10,19 +10,40 @@
 #define common_cpp_refcount_h
 
 #include "../refcnt.h"
+#include "../error.h"
 
 namespace common {
+
+template<typename T>
+class Pointer;
+
+template<typename T>
+class WeakPointer;
+
+namespace internal {
+struct WeakPointerControlBlock;
+} // end namespace
 
 class RefCountable
 {
    refcnt ref;
-public:
-   RefCountable() : ref(1) {}
-   RefCountable(const RefCountable& p) = delete;
-   virtual ~RefCountable() { }
+   internal::WeakPointerControlBlock *wpcb;
 
-   void AddRef(void)  { refcnt_inc(&ref); }
-   bool Release(void) { bool r; if ((r=(refcnt_dec(&ref)?true:false))) delete this; return r; }
+   template<typename T>
+   friend class Pointer;
+
+   internal::WeakPointerControlBlock *
+   MakeWeakImpl(error *err);
+public:
+   RefCountable();
+   RefCountable(const RefCountable& p) = delete;
+   virtual ~RefCountable();
+
+   void
+   AddRef(void);
+
+   bool
+   Release(void);
 };
 
 template<typename T>
@@ -97,6 +118,82 @@ public:
          Release();
          this->ptr = ptr.ptr;
          ptr.ptr = nullptr;
+      }
+      return *this;
+   }
+
+   WeakPointer<T>
+   MakeWeak(error *err)
+   {
+      WeakPointer<T> r;
+      if (this->ptr)
+      {
+         r.wpcb = this->ptr->MakeWeakImpl(err);
+      }
+      return r;
+   }
+};
+
+namespace internal
+{
+
+class WeakPointerBase
+{
+protected:
+   internal::WeakPointerControlBlock *wpcb;
+
+   void
+   AddRef();
+
+   void
+   Release();
+
+   RefCountable *
+   Lock();
+
+   WeakPointerBase(internal::WeakPointerControlBlock *wpcb_) : wpcb(wpcb_) {}
+public:
+   ~WeakPointerBase() { Release(); }
+};
+
+} // end namespace
+
+template<typename T>
+class WeakPointer : public internal::WeakPointerBase
+{
+   friend class Pointer<T>;
+public:
+   WeakPointer() : WeakPointerBase(nullptr) {}
+   WeakPointer(const WeakPointer<T> &other) : WeakPointerBase(other.wpcb) { AddRef(); }
+   WeakPointer(WeakPointer<T> &&other) : WeakPointerBase(other.wpcb) { other.wpcb = nullptr; }
+
+   Pointer<T>
+   Lock()
+   {
+      Pointer<T> ptr;
+      if (wpcb)
+         *ptr.GetAddressOf() = (T*)WeakPointerBase::Lock();
+      return ptr;
+   }
+
+   WeakPointer<T> & operator =(const WeakPointer<T> &ptr)
+   {
+      if (ptr.wpcb != wpcb)
+      {
+         Release();
+         wpcb = ptr.wpcb;
+         AddRef();
+      }
+      return *this;
+   }
+
+   WeakPointer<T> & operator =(WeakPointer<T> &&ptr)
+   {
+      if (&ptr != this)
+      {
+         Release();
+         wpcb = ptr.wpcb;
+         ptr.wpcb = nullptr;
       }
       return *this;
    }

@@ -42,6 +42,7 @@ LIBCOMMON_SRC:=\
    $(LIBCOMMON_ROOT)src/memorystream.cc \
    $(LIBCOMMON_ROOT)src/scheduler.cc \
    $(LIBCOMMON_ROOT)src/thread-cpp.cc \
+   $(LIBCOMMON_ROOT)src/refcnt-cpp.cc \
    $(LIBCOMMON_ROOT)src/worker.cc \
    \
    $(LIBCOMMON_ROOT)src/crypto/hash.c \
