@@ -23,6 +23,8 @@ LIBCOMMON_SRC:=\
    $(LIBCOMMON_ROOT)src/recmutex.c \
    $(LIBCOMMON_ROOT)src/refcnt.c \
    $(LIBCOMMON_ROOT)src/remotepath.c \
+   $(LIBCOMMON_ROOT)src/rwlock.c \
+   $(LIBCOMMON_ROOT)src/rwlock-self.c \
    $(LIBCOMMON_ROOT)src/sem.c \
    $(LIBCOMMON_ROOT)src/size.c \
    $(LIBCOMMON_ROOT)src/thread.c \

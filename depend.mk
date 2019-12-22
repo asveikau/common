@@ -47,6 +47,10 @@ $(LIBCOMMON_ROOT)src/refcnt.o: $(LIBCOMMON_ROOT)src/refcnt.c $(LIBCOMMON_ROOT)in
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/remotepath.o: $(LIBCOMMON_ROOT)src/remotepath.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/path.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
+$(LIBCOMMON_ROOT)src/rwlock-self.o: $(LIBCOMMON_ROOT)src/rwlock-self.c $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/rwlock-self.h
+	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
+$(LIBCOMMON_ROOT)src/rwlock.o: $(LIBCOMMON_ROOT)src/rwlock.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/rwlock-self.h $(LIBCOMMON_ROOT)include/common/rwlock.h $(LIBCOMMON_ROOT)src/rwlock-xpsup.h
+	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/sem.o: $(LIBCOMMON_ROOT)src/sem.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/sem.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/size.o: $(LIBCOMMON_ROOT)src/size.c $(LIBCOMMON_ROOT)include/common/size.h
@@ -73,7 +77,7 @@ $(LIBCOMMON_ROOT)src/winutf.o: $(LIBCOMMON_ROOT)src/winutf.c $(LIBCOMMON_ROOT)in
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/dtorqueue.o: $(LIBCOMMON_ROOT)src/dtorqueue.cc $(LIBCOMMON_ROOT)include/common/c++/dtorqueue.h $(LIBCOMMON_ROOT)include/common/error.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/memorystream.o: $(LIBCOMMON_ROOT)src/memorystream.cc $(LIBCOMMON_ROOT)include/common/c++/lock.h $(LIBCOMMON_ROOT)include/common/c++/new.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/refcnt.h $(LIBCOMMON_ROOT)include/common/thread.h
+$(LIBCOMMON_ROOT)src/memorystream.o: $(LIBCOMMON_ROOT)src/memorystream.cc $(LIBCOMMON_ROOT)include/common/c++/lock.h $(LIBCOMMON_ROOT)include/common/c++/new.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/refcnt.h $(LIBCOMMON_ROOT)include/common/rwlock-self.h $(LIBCOMMON_ROOT)include/common/rwlock.h $(LIBCOMMON_ROOT)include/common/thread.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/pstream.o: $(LIBCOMMON_ROOT)src/pstream.cc $(LIBCOMMON_ROOT)include/common/c++/new.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h $(LIBCOMMON_ROOT)include/common/refcnt.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
@@ -83,7 +87,7 @@ $(LIBCOMMON_ROOT)src/stream.o: $(LIBCOMMON_ROOT)src/stream.cc $(LIBCOMMON_ROOT)i
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/thread-cpp.o: $(LIBCOMMON_ROOT)src/thread-cpp.cc $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/thread.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/worker.o: $(LIBCOMMON_ROOT)src/worker.cc $(LIBCOMMON_ROOT)include/common/c++/lock.h $(LIBCOMMON_ROOT)include/common/c++/ring.h $(LIBCOMMON_ROOT)include/common/c++/scheduler.h $(LIBCOMMON_ROOT)include/common/c++/worker.h $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/sem.h $(LIBCOMMON_ROOT)include/common/thread.h
+$(LIBCOMMON_ROOT)src/worker.o: $(LIBCOMMON_ROOT)src/worker.cc $(LIBCOMMON_ROOT)include/common/c++/lock.h $(LIBCOMMON_ROOT)include/common/c++/ring.h $(LIBCOMMON_ROOT)include/common/c++/scheduler.h $(LIBCOMMON_ROOT)include/common/c++/worker.h $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/rwlock-self.h $(LIBCOMMON_ROOT)include/common/rwlock.h $(LIBCOMMON_ROOT)include/common/sem.h $(LIBCOMMON_ROOT)include/common/thread.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/bundle-apple.o: $(LIBCOMMON_ROOT)src/bundle-apple.m
 	$(CC) $(OBJCFLAGS) $(CFLAGS) $(LIBCOMMON_OBJCFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<

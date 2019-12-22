@@ -10,6 +10,7 @@
 #define common_cxx_lock_h
 
 #include <common/thread.h>
+#include <common/rwlock.h>
 #include <functional>
 #include <mutex>
 #include <new>
@@ -109,6 +110,28 @@ public:
       });
    }
 #endif
+
+   void acquire(rwlock &m)
+   {
+      release();
+      rwlock_acquire_exclusive(&m);
+      acquire(&m, [] (void* p) -> void
+      {
+         auto q = (rwlock*)p;
+         rwlock_release_exclusive(q);
+      });
+   }
+
+   void acquire_shared(rwlock &m)
+   {
+      release();
+      rwlock_acquire_shared(&m);
+      acquire(&m, [] (void* p) -> void
+      {
+         auto q = (rwlock*)p;
+         rwlock_release_shared(q);
+      });
+   }
 
 #if defined(_WINDOWS)
    void acquire(PCRITICAL_SECTION lock)
