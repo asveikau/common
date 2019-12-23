@@ -18,9 +18,12 @@
 #if !defined(__cpp_lib_shared_mutex) && _MSC_VER >= 1400
 #define __cpp_lib_shared_mutex 1
 #endif // vs2015
-#else // not MSC
+#elif __cplusplus >= 202000L
 #include <version>
+#elif !defined(__cpp_lib_shared_mutex) && __cplusplus >= 201700L
+#define __cpp_lib_shared_mutex 1
 #endif
+
 #if defined(__cpp_lib_shared_mutex)
 #include <shared_mutex>
 #endif
