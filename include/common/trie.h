@@ -11,6 +11,8 @@
 
 #include <stddef.h>
 
+#include "error.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -22,13 +24,14 @@ struct trie
    struct trie *subtries[256];
 };
 
-int
+void
 trie_insert(
    struct trie **t,
    const void *key,
    size_t keylen,
    void *value,
-   void (*dtor)(void*)
+   void (*dtor)(void*),
+   error *err
 );
 
 void *

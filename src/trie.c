@@ -26,28 +26,28 @@ check_allocation(struct trie **triep)
    return 0;
 }
 
-int
+void
 trie_insert(
    struct trie **trie,
    const void *keyp,
    size_t keylen,
    void *value,
-   void (*dtor)(void*)
+   void (*dtor)(void*),
+   error *err
 )
 {
    const unsigned char *key = keyp;
-   int r = 0;
 
    while (keylen)
    {
-      if ((r = check_allocation(trie)))
-         return r;
+      if (check_allocation(trie))
+         ERROR_SET(err, nomem);
       trie = &(*trie)->subtries[*key++];
       --keylen;
    }
 
-   if ((r = check_allocation(trie)))
-      return r;
+   if (check_allocation(trie))
+      ERROR_SET(err, nomem);
 
    if ((*trie)->dtor)
       (*trie)->dtor((*trie)->value);
@@ -55,7 +55,7 @@ trie_insert(
    (*trie)->value = value;
    (*trie)->dtor = dtor;
 
-   return r;
+exit:;
 }
 
 void *
