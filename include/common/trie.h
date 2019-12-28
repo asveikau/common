@@ -41,6 +41,13 @@ trie_find(
    size_t keylen
 );
 
+size_t
+trie_get_prefix_length(
+   struct trie *t,
+   const void *keyp,
+   size_t keylen
+);
+
 void
 trie_remove(
    struct trie **t,

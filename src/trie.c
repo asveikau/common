@@ -80,6 +80,32 @@ trie_find(
    return r;
 }
 
+size_t
+trie_get_prefix_length(
+   struct trie *trie,
+   const void *keyp,
+   size_t keylen
+)
+{
+   const unsigned char *key = keyp;
+   size_t r = 0;
+
+   while (trie)
+   {
+      if (trie->value)
+         return r;
+
+      if (!keylen)
+         break;
+
+      trie = trie->subtries[*key++];
+      keylen--;
+      ++r;
+   }
+
+   return 0;
+}
+
 static void
 trie_do_remove(
    struct trie **trie,
