@@ -16,7 +16,7 @@
 #include <new>
 
 #if defined(_MSC_VER)
-#if !defined(__cpp_lib_shared_mutex) && _MSC_VER >= 1400
+#if !defined(__cpp_lib_shared_mutex) && _MSC_VER >= 1400 && !defined(XP_SUPPORT)
 #define __cpp_lib_shared_mutex 1
 #endif // vs2015
 #elif __cplusplus >= 202000L
