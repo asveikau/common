@@ -862,6 +862,69 @@ exit:
 
 #endif
 
+#if defined(_WINDOWS) && !defined(UNDER_CE)
+static
+size_t
+get_nt_prefix(const char *path)
+{
+   // NT paths.
+   //
+   static const PCSTR prefixes[] =
+   {
+      "\\??\\", "\\\\?\\", NULL
+   };
+   const PCSTR *p = prefixes;
+   size_t r = 0;
+   for (; *p; ++p)
+   {
+      size_t len = strlen(*p);
+      if (!strncmp(path, *p, len))
+      {
+         path += len;
+         r += len;
+         break;
+      }
+   }
+
+   // Drive letters.
+   // Note that C:\foo is absolute, and C:foo is relative.
+   //
+   if (is_drive_letter(*path) &&
+       path[1] == ':' &&
+       strchr(PATH_SEP_PBRK, path[2]))
+   {
+      r += 3;
+   }
+
+   // UNC paths
+   //
+   if (!r &&
+       strchr(PATH_SEP_PBRK, *path) &&
+       strchr(PATH_SEP_PBRK, path[1]))
+   {
+      path += 2;
+      r += 2;
+
+      // Try to parse \\host\share
+      //                ^   ^     ^
+      //                |   |     |
+      //             path   p     q
+      //
+      const char *p = strpbrk(path, PATH_SEP_PBRK);
+      if (p)
+      {
+         const char *q = strpbrk(p+1, PATH_SEP_PBRK);
+         if (!q)
+            q = p+strlen(p);
+
+         r += (q - path);
+      }
+   }
+
+   return r;
+}
+#endif
+
 bool
 path_is_relative(const char *path)
 {
@@ -877,35 +940,9 @@ path_is_relative(const char *path)
 
 #if defined(_WINDOWS) && !defined(UNDER_CE)
 
-   // NT special paths...
-   //
-   {
-      static const PCSTR prefixes[] =
-      {
-         "\\??\\", "\\\\?\\", NULL
-      };
-      const PCSTR *p = prefixes;
-      for (; *p; ++p)
-      {
-         int len = strlen(*p);
-         if (!strncmp(path, *p, len))
-            return false;
-      }
-   }
-
-   // UNC paths (and some special NT paths)
-   //
-   if (strchr(PATH_SEP_PBRK, *path) &&
-       strchr(PATH_SEP_PBRK, path[1]))
+   if (get_nt_prefix(path))
       return false;
 
-   // Drive letters.
-   // Note that C:\foo is absolute, and C:foo is relative.
-   //
-   if (is_drive_letter(*path) &&
-       path[1] == ':' &&
-       strchr(PATH_SEP_PBRK, path[2]))
-      return false;
 #endif
    return true;
 }
@@ -947,5 +984,63 @@ exit:
       free(r);
       r = NULL;
    }
+   return r;
+}
+
+char *
+sanitize_path(const char *path, error *err)
+{
+   char *r = NULL;
+   char *heap_buffers[2] = {NULL};
+   int nheap = 0;
+
+   heap_buffers[nheap] = make_absolute_path(path, err);
+   ERROR_CHECK(err);
+   if (heap_buffers[nheap])
+      path = heap_buffers[nheap++];
+
+#if defined(_WINDOWS) && !defined(UNDER_CE)
+   {
+      char *root = NULL;
+      size_t prefix = get_nt_prefix(path);
+      char *p = NULL;
+
+      if (!prefix)
+         ERROR_SET(err, unknown, "Unexpected root");
+
+      root = heap_buffers[nheap] = malloc(prefix+1);
+      if (!root)
+         ERROR_SET(err, nomem);
+      ++nheap;
+      memcpy(root, path, prefix);
+      root[prefix] = 0;
+
+      for (p=root; (p=strchr(p, '/')); )
+      {
+         *p++ = '\\';
+      }
+
+      if (path[prefix])
+      {
+         r = append_path(root, path + prefix, err);
+         ERROR_CHECK(err);
+      }
+      else
+      {
+         r = root;
+         heap_buffers[--nheap] = NULL;
+      }
+   }
+#else
+   {
+      char root[] = {PATH_SEP, 0};
+      r = append_path(root, path, err);
+      ERROR_CHECK(err);
+   }
+#endif
+
+exit:
+   while (nheap)
+      free(heap_buffers[--nheap]);
    return r;
 }

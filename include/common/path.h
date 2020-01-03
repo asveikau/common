@@ -69,6 +69,9 @@ path_is_relative(const char *path);
 char *
 make_absolute_path(const char *path, error *err);
 
+char *
+sanitize_path(const char *path, error *err);
+
 bool
 path_is_remote(const char *path, error *err);
 
