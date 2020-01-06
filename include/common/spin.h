@@ -19,13 +19,15 @@
 
 #if defined(_WINDOWS)
 #include <windows.h>
-#define spin() Sleep(0)
-#elif defined(__linux__)
+#define spin() SwitchToThread()
+#elif defined(__linux__) || defined(__FreeBSD__) || \
+      defined(__NetBSD__) || defined(__OpenBSD__) || \
+      defined(__sun__) || defined(__APPLE__)
 #include <sched.h>
 #define spin() sched_yield()
 #else
 #include <unistd.h>
-#define spin() usleep(800)
+#define spin() usleep(1)
 #endif
 
 #endif
