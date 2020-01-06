@@ -17,12 +17,14 @@ typedef DWORD recmutex_owner;
 typedef pthread_t recmutex_owner;
 #endif
 
+struct waiter_node;
+
 typedef struct
 {
    mutex lock;
    recmutex_owner owner;
    int acquire_count;
-   struct recmutex_waiter *waiters;
+   struct waiter_node *waiters;
 } recmutex;
 
 void

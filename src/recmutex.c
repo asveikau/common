@@ -7,60 +7,16 @@
 */
 
 #include <common/recmutex.h>
+#include <common/waiter.h>
 #include <common/sem.h>
+
+#include <stdbool.h>
 #include <assert.h>
 
 #include <stdlib.h>
 #include <string.h>
 
-struct recmutex_waiter
-{
-   struct recmutex_waiter *next;
-
-#if defined(MUTEX_WINDOWS)
-   HANDLE EventHandle;
-#else
-   semaphore sem;
-#endif
-};
-
-static void
-recmutex_wait_init(struct recmutex_waiter *self, error *err)
-{
-#if defined(MUTEX_WINDOWS)
-   if (!(self->EventHandle = CreateEvent(NULL, FALSE, FALSE, NULL)))
-   {
-      ERROR_SET(err, win32, GetLastError());
-   }
-exit:;
-#else
-   sm_init(&self->sem, 0, err);
-#endif
-}
-
-static void
-recmutex_wait(struct recmutex_waiter *self)
-{
-#if defined(MUTEX_WINDOWS)
-   WaitForSingleObject(self->EventHandle, INFINITE);
-   CloseHandle(self->EventHandle);
-#else
-   sm_wait(&self->sem);
-   sm_destroy(&self->sem);
-#endif
-}
-
-static void
-recmutex_signal(struct recmutex_waiter *other)
-{
-#if defined(MUTEX_WINDOWS)
-   SetEvent(other->EventHandle);
-#else
-   sm_post(&other->sem);
-#endif
-}
-
-static int
+static bool
 recmutex_is_owner(recmutex *m)
 {
 #if defined(MUTEX_WINDOWS)
@@ -90,8 +46,8 @@ recmutex_destroy(recmutex *m)
 void
 recmutex_acquire(recmutex *m)
 {
-   struct recmutex_waiter self;
-   int wait = 0;
+   struct waiter_node self;
+   bool wait = false;
 
 entry:
    mutex_acquire(&m->lock);
@@ -112,21 +68,18 @@ entry:
    }
    else
    {
-      error err = {0};
-      recmutex_wait_init(&self, &err);
-      if (ERROR_FAILED(&err))
-         abort(); // TODO: clean this up
-
+      waiter_node_init(&self);
       self.next = m->waiters;
       m->waiters = &self;
-      wait = 1;
+      wait = true;
    }
    mutex_release(&m->lock);
 
    if (wait)
    {
-      recmutex_wait(&self);
-      wait = 0;
+      waiter_node_wait(&self);
+      waiter_node_destroy(&self);
+      wait = false;
       goto entry;
    }
 }
@@ -141,11 +94,11 @@ recmutex_release(recmutex *m)
 
    if (!--m->acquire_count)
    {
-      struct recmutex_waiter *waiter = m->waiters;
+      struct waiter_node *waiter = m->waiters;
       if (waiter)
       {
          m->waiters = waiter->next;
-         recmutex_signal(waiter);
+         waiter_node_signal(waiter);
       }
    }
 

@@ -23,14 +23,14 @@
 extern "C" {
 #endif
 
-struct rwlock_self_waiter_node;
+struct waiter_node;
 struct rwlock_self
 {
    mutex lock;
    int num_readers;
    int num_writers;
-   struct rwlock_self_waiter_node *readers;
-   struct rwlock_self_waiter_node *writers;
+   struct waiter_node *readers;
+   struct waiter_node *writers;
 };
 
 void

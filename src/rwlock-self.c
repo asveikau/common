@@ -13,134 +13,11 @@
 // are unavailable.  (eg: Windows XP)
 //
 
-#include <common/cas.h>
 #include <common/mutex.h>
 #include <common/rwlock-self.h>
+#include <common/waiter.h>
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
-
-#if defined(_WINDOWS)
-#include <windows.h>
-#else
-#include <unistd.h>
-#include <errno.h>
-#endif
-
-#if defined(__linux__)
-#include <sys/eventfd.h>
-#endif
-
-// Represents and blocking thread.
-// This structure will exist on the stack of each thread to obviate
-// the need for memory allocation.  But creating kernel events to
-// block can fail, in which case we will spin.
-//
-struct rwlock_self_waiter_node
-{
-#if defined(_WINDOWS)
-   HANDLE event;
-#else
-   int pipe[2];
-#endif
-   volatile bool wakeup;
-   struct rwlock_self_waiter_node *next;
-};
-
-//
-// OS specific blocking primitives.
-//
-
-static void
-waiter_node_init(struct rwlock_self_waiter_node *node)
-{
-   memset(node, 0, sizeof(*node));
-#if defined(_WINDOWS)
-   node->event = CreateEvent(NULL, FALSE, FALSE, NULL);
-#else
-#if defined(__linux__)
-   node->pipe[0] = node->pipe[1] = eventfd(0, EFD_CLOEXEC);
-   if (node->pipe[0] >= 0)
-      return;
-#endif
-   if (pipe(node->pipe))
-      node->pipe[0] = node->pipe[1] = -1;
-#endif
-}
-
-static void
-waiter_node_destroy(struct rwlock_self_waiter_node *node)
-{
-#if defined(_WINDOWS)
-   if (node->event)
-   {
-      CloseHandle(node->event);
-      node->event = NULL;
-   }
-#else
-   if (node->pipe[0] >= 0)
-      close(node->pipe[0]);
-   if (node->pipe[1] >= 0 && node->pipe[0] != node->pipe[1])
-      close(node->pipe[1]);
-   node->pipe[0] = node->pipe[1] = -1;
-#endif
-}
-
-static void
-waiter_node_wait(struct rwlock_self_waiter_node *node)
-{
-#if defined(_WINDOWS)
-   if (node->event)
-   {
-      WaitForSingleObject(node->event, INFINITE);
-      return;
-   }
-#else
-   if (node->pipe[0] >= 0)
-   {
-      int64_t i;
-      int r = 0;
-      do
-      {
-         r = read(node->pipe[0], &i, sizeof(i));
-      } while (r < 0 && (errno == EINTR || errno == EAGAIN));
-      if (r < sizeof(i))
-         abort();
-      return;
-   }
-#endif
-   while (!node->wakeup)
-      ;
-}
-
-static void
-waiter_node_signal(struct rwlock_self_waiter_node *node)
-{
-#if defined(_WINDOWS)
-   if (node->event)
-   {
-      SetEvent(node->event);
-      return;
-   }
-#else
-   if (node->pipe[1] >= 0)
-   {
-      int64_t i = 1;
-      int r = 0;
-      do
-      {
-         r = read(node->pipe[1], &i, sizeof(i));
-      } while (r < 0 && (errno == EINTR || errno == EAGAIN));
-      if (r < sizeof(i))
-         abort();
-      return;
-   }
-#endif
-   node->wakeup = true;
-   memory_barrier();
-}
 
 //
 // Enqueue into waiters list
@@ -148,8 +25,8 @@ waiter_node_signal(struct rwlock_self_waiter_node *node)
 
 static void
 waiter_node_enqueue(
-   struct rwlock_self_waiter_node **head,
-   struct rwlock_self_waiter_node *node
+   struct waiter_node **head,
+   struct waiter_node *node
 )
 {
    node->next = *head;
@@ -159,7 +36,7 @@ waiter_node_enqueue(
 static void
 rwlock_self_wakeup(struct rwlock_self *lock)
 {
-   struct rwlock_self_waiter_node *node = NULL;
+   struct waiter_node *node = NULL;
    int *inc = NULL;
 
    if (!lock->num_writers && !lock->num_writers && lock->writers)
@@ -182,7 +59,7 @@ rwlock_self_wakeup(struct rwlock_self *lock)
 
    while (node)
    {
-      struct rwlock_self_waiter_node *next = node->next;
+      struct waiter_node *next = node->next;
       waiter_node_signal(node);
       node = next;
       ++*inc;
@@ -206,7 +83,7 @@ void
 rwlock_self_acquire_exclusive(struct rwlock_self *lock)
 {
    bool block = false;
-   struct rwlock_self_waiter_node self = {0};
+   struct waiter_node self = {0};
 
    mutex_acquire(&lock->lock);
    if (lock->num_readers || lock->num_writers || lock->writers)
@@ -241,7 +118,7 @@ void
 rwlock_self_acquire_shared(struct rwlock_self *lock)
 {
    bool block = false;
-   struct rwlock_self_waiter_node self = {0};
+   struct waiter_node self = {0};
 
    mutex_acquire(&lock->lock);
    if (lock->num_writers)
