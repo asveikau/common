@@ -51,6 +51,22 @@ waiter_node_signal(struct waiter_node *node);
 void
 waiter_node_wait(struct waiter_node *node);
 
+typedef
+struct waiter_node *
+waiter_node_queue;
+
+void
+waiter_node_queue_insert(
+   waiter_node_queue *q,
+   struct waiter_node *n
+);
+
+struct waiter_node *
+waiter_node_queue_chomp(waiter_node_queue *q, int n);
+
+struct waiter_node *
+waiter_node_queue_chomp_all(waiter_node_queue *q);
+
 #if defined(__cplusplus)
 }
 #endif

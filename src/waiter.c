@@ -111,3 +111,37 @@ waiter_node_signal(struct waiter_node *node)
    node->wakeup = true;
    memory_barrier();
 }
+
+void
+waiter_node_queue_insert(
+   waiter_node_queue *q,
+   struct waiter_node *n
+)
+{
+   n->next = *q;
+   *q = n;
+}
+
+struct waiter_node *
+waiter_node_queue_chomp(waiter_node_queue *q, int n)
+{
+   struct waiter_node *head = *q;
+   struct waiter_node *p = head, **last = &p;
+
+   while (p && n--)
+   {
+      last = &p->next;
+      p = *q = p->next;
+   }
+
+   *last = NULL;
+   return head;
+}
+
+struct waiter_node *
+waiter_node_queue_chomp_all(waiter_node_queue *q)
+{
+   struct waiter_node *head = *q;
+   *q = NULL;
+   return head;
+}

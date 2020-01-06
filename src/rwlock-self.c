@@ -19,20 +19,6 @@
 
 #include <string.h>
 
-//
-// Enqueue into waiters list
-//
-
-static void
-waiter_node_enqueue(
-   struct waiter_node **head,
-   struct waiter_node *node
-)
-{
-   node->next = *head;
-   *head = node;
-}
-
 static void
 rwlock_self_wakeup(struct rwlock_self *lock)
 {
@@ -43,17 +29,14 @@ rwlock_self_wakeup(struct rwlock_self *lock)
    {
       // Wake up exactly one writer.
       //
-      node = lock->writers;
-      lock->writers = node->next;
-      node->next = NULL;
+      node = waiter_node_queue_chomp(&lock->writers, 1);
       inc = &lock->num_writers;
    }
    else if (lock->readers)
    {
       // Wake up all readers.
       //
-      node = lock->readers;
-      lock->readers = NULL;
+      node = waiter_node_queue_chomp_all(&lock->readers);
       inc = &lock->num_readers;
    }
 
@@ -90,7 +73,7 @@ rwlock_self_acquire_exclusive(struct rwlock_self *lock)
    {
       block = true;
       waiter_node_init(&self);
-      waiter_node_enqueue(&lock->writers, &self);
+      waiter_node_queue_insert(&lock->writers, &self);
    }
    else
    {
@@ -125,7 +108,7 @@ rwlock_self_acquire_shared(struct rwlock_self *lock)
    {
       block = true;
       waiter_node_init(&self);
-      waiter_node_enqueue(&lock->readers, &self);
+      waiter_node_queue_insert(&lock->readers, &self);
    }
    else
    {

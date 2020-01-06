@@ -18,6 +18,7 @@
 
 #include "error.h"
 #include "mutex.h"
+#include "waiter.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -29,8 +30,8 @@ struct rwlock_self
    mutex lock;
    int num_readers;
    int num_writers;
-   struct waiter_node *readers;
-   struct waiter_node *writers;
+   waiter_node_queue readers;
+   waiter_node_queue writers;
 };
 
 void
