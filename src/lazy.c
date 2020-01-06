@@ -8,6 +8,7 @@
 
 #include <common/lazy.h>
 #include <common/cas.h>
+#include <common/spin.h>
 
 enum
 {
@@ -15,16 +16,6 @@ enum
    Initializing,
    Initialized,
 };
-
-#if defined(_WINDOWS)
-#define spin() Sleep(0)
-#elif defined(__linux__)
-#include <sched.h>
-#define spin() sched_yield()
-#else
-#include <unistd.h>
-#define spin() usleep(800)
-#endif 
 
 void
 lazy_init(

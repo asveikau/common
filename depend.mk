@@ -27,7 +27,7 @@ $(LIBCOMMON_ROOT)src/exec.o: $(LIBCOMMON_ROOT)src/exec.c $(LIBCOMMON_ROOT)includ
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/getopt.o: $(LIBCOMMON_ROOT)src/getopt.c $(LIBCOMMON_ROOT)include/common/getopt.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/lazy.o: $(LIBCOMMON_ROOT)src/lazy.c $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/lazy.h
+$(LIBCOMMON_ROOT)src/lazy.o: $(LIBCOMMON_ROOT)src/lazy.c $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/lazy.h $(LIBCOMMON_ROOT)include/common/spin.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/logcallback.o: $(LIBCOMMON_ROOT)src/logcallback.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/logger.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/path.h $(LIBCOMMON_ROOT)include/common/thread.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
@@ -71,7 +71,7 @@ $(LIBCOMMON_ROOT)src/utf8dec.o: $(LIBCOMMON_ROOT)src/utf8dec.c $(LIBCOMMON_ROOT)
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/utf8enc.o: $(LIBCOMMON_ROOT)src/utf8enc.c $(LIBCOMMON_ROOT)include/common/utf.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/waiter.o: $(LIBCOMMON_ROOT)src/waiter.c $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/waiter.h
+$(LIBCOMMON_ROOT)src/waiter.o: $(LIBCOMMON_ROOT)src/waiter.c $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/spin.h $(LIBCOMMON_ROOT)include/common/waiter.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/winuname.o: $(LIBCOMMON_ROOT)src/winuname.c $(LIBCOMMON_ROOT)include/common/uname.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<

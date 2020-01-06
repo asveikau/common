@@ -8,6 +8,7 @@
 
 #include <common/waiter.h>
 #include <common/cas.h>
+#include <common/spin.h>
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -81,7 +82,7 @@ waiter_node_wait(struct waiter_node *node)
    }
 #endif
    while (!node->wakeup)
-      ;
+      spin();
 }
 
 void
