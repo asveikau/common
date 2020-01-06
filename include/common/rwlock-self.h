@@ -24,7 +24,6 @@
 extern "C" {
 #endif
 
-struct waiter_node;
 struct rwlock_self
 {
    mutex lock;
