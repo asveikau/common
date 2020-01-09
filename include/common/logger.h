@@ -10,6 +10,7 @@
 #define logger_h_
 
 #include <stdarg.h>
+#include <stdbool.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -33,6 +34,9 @@ log_unregister_callback(int id);
 
 void
 log_register_default_callback();
+
+bool
+log_unregister_default_callback();
 
 void
 register_backtrace_logger(

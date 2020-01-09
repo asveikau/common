@@ -19,7 +19,10 @@
 struct log_context
 {
    HANDLE LogFile;
+   int id;
 };
+
+#define LOG_CONTEXT_INIT {INVALID_HANDLE_VALUE, -1}
 
 static void
 log_init(struct log_context *ctx, const char *path, error *err)
@@ -41,6 +44,17 @@ log_init(struct log_context *ctx, const char *path, error *err)
 
 exit:
    free(path16);
+}
+
+static void
+log_destroy(struct log_context *ctx)
+{
+   if (ctx->LogFile != INVALID_HANDLE_VALUE)
+   {
+      CloseHandle(ctx->LogFile);
+      ctx->LogFile = INVALID_HANDLE_VALUE;
+   }
+   ctx->id = -1;
 }
 
 static void
@@ -89,7 +103,10 @@ struct log_context
    FILE *stderr_clone;
    int stderr_pipe[2];
    thread_id stderr_thread;
+   int id;
 };
+
+#define LOG_CONTEXT_INIT { NULL, NULL, {-1, -1}, {NULL}, -1 }
 
 static void
 on_log_from_stderr(const char *msg)
@@ -108,6 +125,7 @@ stderr_thread_proc(void *arg)
    char buf[4096];
    int offset = 0;
 
+   ctx->stderr_pipe[0] = -1;
    memset(&err, 0, sizeof(err));
 
    for (;;)
@@ -161,8 +179,6 @@ log_init(struct log_context *ctx, const char *path, error *err)
 {
    int fd;
 
-   ctx->stderr_pipe[0] = ctx->stderr_pipe[1] = -1;
-
    fd = open(path, O_CREAT | O_APPEND | O_WRONLY, 0600);
    if (fd >= 0)
    {
@@ -206,6 +222,51 @@ exit:
 }
 
 static void
+close_fd(int *pfd)
+{
+   if (pfd && *pfd >= 0)
+   {
+      close(*pfd);
+      *pfd = -1;
+   }
+}
+
+static void
+log_destroy(struct log_context *ctx)
+{
+   // Need to restore old stderr fd first, so that any new writes
+   // to stderr don't go to the broken pipe.
+   //
+   if (ctx->stderr_clone)
+      dup2(fileno(ctx->stderr_clone), 2);
+
+   close_fd(&ctx->stderr_pipe[1]);
+
+   if (!thread_is_started(&ctx->stderr_thread))
+      close_fd(&ctx->stderr_pipe[0]);
+   else
+   {
+      join_thread(&ctx->stderr_thread);
+      memset(&ctx->stderr_thread, 0, sizeof(ctx->stderr_thread));
+   }
+
+   if (ctx->stderr_clone)
+   {
+      fflush(ctx->stderr_clone);
+      fclose(ctx->stderr_clone);
+      ctx->stderr_clone = NULL;
+   }
+
+   if (ctx->logfile)
+   {
+      fclose(ctx->logfile);
+      ctx->logfile = NULL;
+   }
+
+   ctx->id = -1;
+}
+
+static void
 log_cb_platform(struct log_context *context, const char *msg)
 {
    FILE *files[] = { context->logfile, context->stderr_clone };
@@ -229,10 +290,11 @@ log_cb(void *contextp, const char *msg)
    log_cb_platform(context, msg);
 }
 
+static struct log_context ctx = LOG_CONTEXT_INIT;
+
 void
 log_register_default_callback()
 {
-   static struct log_context ctx = {0};
    char *dir = NULL;
    char *logfile = NULL;
 
@@ -248,9 +310,22 @@ log_register_default_callback()
    log_init(&ctx, logfile, &err);
    ERROR_CHECK(&err);
 
-   log_register_callback(log_cb, &ctx);
+   ctx.id = log_register_callback(log_cb, &ctx);
 exit:
    free(dir);
    free(logfile);
    error_clear(&err);
+}
+
+bool
+log_unregister_default_callback()
+{
+   bool r = false;
+   if (ctx.id >= 0)
+   {
+      log_unregister_callback(ctx.id);
+      log_destroy(&ctx);
+      r = true;
+   }
+   return r;
 }
