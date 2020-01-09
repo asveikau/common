@@ -11,6 +11,7 @@ LIBCOMMON_SRC:=\
    $(LIBCOMMON_ROOT)src/bundle.c \
    $(LIBCOMMON_ROOT)src/crashlog.c \
    $(LIBCOMMON_ROOT)src/closefrom.c \
+   $(LIBCOMMON_ROOT)src/copy.c \
    $(LIBCOMMON_ROOT)src/error.c \
    $(LIBCOMMON_ROOT)src/error-libc.c \
    $(LIBCOMMON_ROOT)src/lazy.c \

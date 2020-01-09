@@ -111,6 +111,9 @@ secure_mkdir(const char *path, error *err);
 void
 mkdir_if_not_exists(const char *path, error *err);
 
+void
+copy_file(const char *src, const char *dst, error *err);
+
 const char *
 get_appname();
 

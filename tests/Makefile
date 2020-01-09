@@ -4,7 +4,7 @@ all-phony: all
 LIBCOMMON_ROOT=../
 include ../Makefile.inc
 
-TESTS=append-path$(EXESUFFIX) utf$(EXESUFFIX) log$(EXESUFFIX)
+TESTS=append-path$(EXESUFFIX) utf$(EXESUFFIX) log$(EXESUFFIX) cp$(EXESUFFIX)
 
 ifndef WINDOWS
 TESTS+=fsinfo$(EXESUFFIX)
@@ -29,3 +29,6 @@ utf$(EXESUFFIX): utf.c $(LIBCOMMON)
 
 log$(EXESUFFIX): log.c $(LIBCOMMON)
 	$(CC) $(CFLAGS) -o $@ log.c $(LIBCOMMON)
+
+cp$(EXESUFFIX): cp.c $(LIBCOMMON)
+	$(CC) $(CFLAGS) -o $@ cp.c $(LIBCOMMON)
