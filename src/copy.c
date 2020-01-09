@@ -124,6 +124,22 @@ copy_file_range(
 #include <sys/sendfile.h>
 #include <limits.h>
 
+#if !defined(SIZE_MAX)
+#if defined(SIZE_T_MAX)
+#define SIZE_MAX SIZE_T_MAX
+#else
+#define SIZE_MAX (~(size_t)0)
+#endif
+#endif
+
+#if !defined(SSIZE_MAX)
+#if defined(SSIZE_T_MAX)
+#define SSIZE_MAX SSIZE_T_MAX
+#else
+#define SSIZE_MAX (SIZE_MAX/2)
+#endif
+#endif
+
 static
 ssize_t
 copy_range(
@@ -157,7 +173,7 @@ copy_fds(struct stat *stat, int infd, int outfd, error *err)
 
    while (len)
    {
-      ssize_t r = copy_range(infd, outfd, off, MIN(len, SIZE_MAX/2));
+      ssize_t r = copy_range(infd, outfd, off, MIN(len, SSIZE_MAX));
 #if defined(__linux__)
       // On Linux 2.6.0 through 2.6.32 [2010-02-24], sendfile(2) needs outfd to
       // be a socket.
