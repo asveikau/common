@@ -95,6 +95,8 @@ exit:;
 
 #if defined(__linux__)
 #include <sys/syscall.h>
+#include <sys/types.h>
+#define copy_file_range copy_file_range_local
 // NB: Added to glibc 2.27 on 2018-02-01.
 // Some day we can remove this.
 static
