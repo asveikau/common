@@ -149,7 +149,7 @@ protected:
    Release();
 
    RefCountable *
-   Lock();
+   Lock() const;
 
    WeakPointerBase(internal::WeakPointerControlBlock *wpcb_) : wpcb(wpcb_) {}
 public:
@@ -168,7 +168,7 @@ public:
    WeakPointer(WeakPointer<T> &&other) : WeakPointerBase(other.wpcb) { other.wpcb = nullptr; }
 
    Pointer<T>
-   Lock()
+   Lock() const
    {
       Pointer<T> ptr;
       if (wpcb)

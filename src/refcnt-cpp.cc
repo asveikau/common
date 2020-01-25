@@ -45,9 +45,9 @@ struct WeakPointerControlBlock
    }
 
    void
-   AcquireExclusive(locker &l)
+   AcquireExclusive(locker &l) const
    {
-      l.acquire(lock);
+      l.acquire(const_cast<decltype(lock)&>(lock));
    }
 
    void
@@ -70,7 +70,7 @@ struct WeakPointerControlBlock
    }
 
    RefCountable *
-   Lock()
+   Lock() const
    {
       locker l;
       AcquireExclusive(l);
@@ -184,7 +184,7 @@ common::internal::WeakPointerBase::Release()
 }
 
 common::RefCountable *
-common::internal::WeakPointerBase::Lock()
+common::internal::WeakPointerBase::Lock() const
 {
    return wpcb ? wpcb->Lock() : nullptr;
 }
