@@ -13,7 +13,7 @@ $(LIBCOMMON_ROOT)src/bundle.o: $(LIBCOMMON_ROOT)src/bundle.c $(LIBCOMMON_ROOT)in
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/closefrom.o: $(LIBCOMMON_ROOT)src/closefrom.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/copy.o: $(LIBCOMMON_ROOT)src/copy.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h
+$(LIBCOMMON_ROOT)src/copy.o: $(LIBCOMMON_ROOT)src/copy.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h $(LIBCOMMON_ROOT)include/common/size.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/crashlog.o: $(LIBCOMMON_ROOT)src/crashlog.c $(LIBCOMMON_ROOT)include/common/backtrace.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/logger.h $(LIBCOMMON_ROOT)include/common/misc.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<

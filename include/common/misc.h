@@ -92,18 +92,6 @@ vasprintf(char **dst, const char *fmt, va_list ap);
 
 #endif
 
-#if !defined(SIZE_T_FMT)
-
-#if defined(_MSC_VER) && _MSC_VER < 1800
-#define SIZE_T_FMT_d "u"
-#define SIZE_T_FMT_x "x"
-#else
-#define SIZE_T_FMT_d "zu"
-#define SIZE_T_FMT_x "zx"
-#endif
-
-#endif
-
 #if !defined(PID_T_FMT)
 #define PID_T_FMT "d"
 #endif

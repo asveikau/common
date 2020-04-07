@@ -7,11 +7,6 @@
 */
 
 #include <common/size.h>
-#include <limits.h>
-
-#ifndef SIZE_MAX
-#define SIZE_MAX (~(size_t)0)
-#endif
 
 int
 size_add(size_t a, size_t b, size_t *sum)

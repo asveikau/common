@@ -23,6 +23,7 @@
 
 #include <common/path.h>
 #include <common/misc.h>
+#include <common/size.h>
 
 #if defined(_WINDOWS)
 #include <windows.h>
@@ -124,23 +125,6 @@ copy_file_range(
 
 #if defined(__linux__) || defined(__sun__)
 #include <sys/sendfile.h>
-#include <limits.h>
-
-#if !defined(SIZE_MAX)
-#if defined(SIZE_T_MAX)
-#define SIZE_MAX SIZE_T_MAX
-#else
-#define SIZE_MAX (~(size_t)0)
-#endif
-#endif
-
-#if !defined(SSIZE_MAX)
-#if defined(SSIZE_T_MAX)
-#define SSIZE_MAX SSIZE_T_MAX
-#else
-#define SSIZE_MAX (SIZE_MAX/2)
-#endif
-#endif
 
 static
 ssize_t
