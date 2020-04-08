@@ -30,8 +30,8 @@
 
 using namespace common;
 
-int
-common::Stream::Write(const void *buf, int len, error *err)
+size_t
+common::Stream::Write(const void *buf, size_t len, error *err)
 {
 #if defined(_WINDOWS)
    ERROR_SET(err, win32, ERROR_ACCESS_DENIED);
@@ -127,11 +127,11 @@ public:
    exit:;
    }
 
-   int Read(void *buf, int len, error *err)
+   size_t Read(void *buf, size_t len, error *err)
    {
       if (!len)
          return 0;
-      int r = fread(buf, 1, len, f_);
+      auto r = fread(buf, 1, len, f_);
       if (!r && ferror(f_))
       {
          r = -1;
@@ -141,9 +141,9 @@ public:
       return r;
    }
 
-   int Write(const void *buf, int len, error *err)
+   size_t Write(const void *buf, size_t len, error *err)
    {
-      int r = fwrite(buf, 1, len, f_);
+      auto r = fwrite(buf, 1, len, f_);
       if (r != len)
          ERROR_SET(err, errno, errno);
    exit:
@@ -455,10 +455,10 @@ struct StreamWrapper : public common::PStream
    uint64_t GetSize(error *err)     { return stream->GetSize(err); }
    void Flush(error *err)           { stream->Flush(err); }
 
-   int
-   Read(void *buf, int len, uint64_t pos, error *err)
+   size_t
+   Read(void *buf, size_t len, uint64_t pos, error *err)
    {
-      int r = 0;
+      size_t r = 0;
 
       stream->Seek(pos, SEEK_SET, err);
       ERROR_CHECK(err);
@@ -469,10 +469,10 @@ struct StreamWrapper : public common::PStream
       return r;
    }
 
-   int
-   Write(const void *buf, int len, uint64_t pos, error *err)
+   size_t
+   Write(const void *buf, size_t len, uint64_t pos, error *err)
    {
-      int r = 0;
+      size_t r = 0;
 
       stream->Seek(pos, SEEK_SET, err);
       ERROR_CHECK(err);
@@ -568,15 +568,15 @@ struct SubstreamWrapper : public common::Stream
    }
 
    void
-   Translate(uint64_t &callerPos, int &callerLen, error *err)
+   Translate(uint64_t &callerPos, size_t &callerLen, error *err)
    {
       callerLen = MIN(len - callerPos, callerLen);
       callerPos += pos;
    }
 
-   int Read(void *buf, int len, error *err)
+   size_t Read(void *buf, size_t len, error *err)
    {
-      int r = 0;
+      size_t r = 0;
       auto pos = virtualPos;
       Translate(pos, len, err);
       ERROR_CHECK(err);
@@ -589,9 +589,9 @@ struct SubstreamWrapper : public common::Stream
       return r;
    }
 
-   int Write(const void *buf, int len, error *err)
+   size_t Write(const void *buf, size_t len, error *err)
    {
-      int r = 0;
+      size_t r = 0;
       auto pos = virtualPos;
       Translate(pos, len, err);
       ERROR_CHECK(err);

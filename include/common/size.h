@@ -23,7 +23,6 @@ size_add(size_t a, size_t b, size_t *sum);
 int
 size_mult(size_t a, size_t b, size_t *product);
 
-
 //
 // C99 introduces %zd etc. for printing size_t, but older compilers
 // especially from Microsoft may not have it.
@@ -65,4 +64,90 @@ size_mult(size_t a, size_t b, size_t *product);
 #if defined(__cplusplus)
 }
 #endif
+
+//
+// C++ only - utility functions to convert between size_t read functions
+// and other types, like int or size_t
+//
+#if defined(__cplusplus)
+#include <common/misc.h>
+#if defined(_WINDOWS)
+#include <windows.h>
+#endif
+
+namespace common
+{
+
+template<typename IOFunc, typename AdvanceFunc, typename InnerLen>
+size_t
+IoFuncToSizeT(
+   IOFunc ioFunc,
+   AdvanceFunc advanceFunc,
+   size_t len,
+   InnerLen max,
+   error *err
+)
+{
+   size_t total = 0;
+   while (len)
+   {
+      InnerLen r = ioFunc(MIN(max, len), err);
+      ERROR_CHECK(err);
+      if (r <= 0)
+         break;
+      total += r;
+      len -= r;
+      advanceFunc(r);
+   }
+exit:
+   return total;
+}
+
+template<typename IOFunc, typename AdvanceFunc>
+size_t
+IntIoFuncToSizeT(
+   IOFunc ioFunc,
+   AdvanceFunc advanceFunc,
+   size_t len,
+   error *err
+)
+{
+   return IoFuncToSizeT(ioFunc, advanceFunc, len, (int)INT_MAX, err);
+}
+
+#if defined(_WINDOWS)
+
+template<typename IOFunc, typename AdvanceFunc>
+size_t
+DWordIoFuncToSizeT(
+   IOFunc ioFunc,
+   AdvanceFunc advanceFunc,
+   size_t len,
+   error *err
+)
+{
+   return IoFuncToSizeT(ioFunc, advanceFunc, len, (DWORD)~0U, err);
+}
+
+#endif
+
+#if !defined(_MSC_VER)
+
+template<typename IOFunc, typename AdvanceFunc>
+size_t
+SSizeTIoFuncToSizeT(
+   IOFunc ioFunc,
+   AdvanceFunc advanceFunc,
+   size_t len,
+   error *err
+)
+{
+   return IoFuncToSizeT(ioFunc, advanceFunc, len, (ssize_t)SSIZE_MAX, err);
+}
+
+#endif
+
+} // end namespace
+#endif
+
 #endif

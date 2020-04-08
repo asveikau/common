@@ -7,7 +7,7 @@ $(LIBCOMMON_ROOT)src/asprintf.o: $(LIBCOMMON_ROOT)src/asprintf.c $(LIBCOMMON_ROO
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/backtrace.o: $(LIBCOMMON_ROOT)src/backtrace.c $(LIBCOMMON_ROOT)include/common/backtrace.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/buffer.o: $(LIBCOMMON_ROOT)src/buffer.c $(LIBCOMMON_ROOT)include/common/buffer.h $(LIBCOMMON_ROOT)include/common/size.h
+$(LIBCOMMON_ROOT)src/buffer.o: $(LIBCOMMON_ROOT)src/buffer.c $(LIBCOMMON_ROOT)include/common/buffer.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/size.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/bundle.o: $(LIBCOMMON_ROOT)src/bundle.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/lazy.h $(LIBCOMMON_ROOT)include/common/path.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
@@ -19,7 +19,7 @@ $(LIBCOMMON_ROOT)src/crashlog.o: $(LIBCOMMON_ROOT)src/crashlog.c $(LIBCOMMON_ROO
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/error-libc.o: $(LIBCOMMON_ROOT)src/error-libc.c $(LIBCOMMON_ROOT)include/common/error.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/error-windows.o: $(LIBCOMMON_ROOT)src/error-windows.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/size.h
+$(LIBCOMMON_ROOT)src/error-windows.o: $(LIBCOMMON_ROOT)src/error-windows.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/size.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/error-winnt.o: $(LIBCOMMON_ROOT)src/error-winnt.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/lazy.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
@@ -55,7 +55,7 @@ $(LIBCOMMON_ROOT)src/rwlock.o: $(LIBCOMMON_ROOT)src/rwlock.c $(LIBCOMMON_ROOT)in
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/sem.o: $(LIBCOMMON_ROOT)src/sem.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/sem.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/size.o: $(LIBCOMMON_ROOT)src/size.c $(LIBCOMMON_ROOT)include/common/size.h
+$(LIBCOMMON_ROOT)src/size.o: $(LIBCOMMON_ROOT)src/size.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/size.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/thread.o: $(LIBCOMMON_ROOT)src/thread.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/thread.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
@@ -83,7 +83,7 @@ $(LIBCOMMON_ROOT)src/dtorqueue.o: $(LIBCOMMON_ROOT)src/dtorqueue.cc $(LIBCOMMON_
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/memorystream.o: $(LIBCOMMON_ROOT)src/memorystream.cc $(LIBCOMMON_ROOT)include/common/c++/lock.h $(LIBCOMMON_ROOT)include/common/c++/new.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/refcnt.h $(LIBCOMMON_ROOT)include/common/rwlock-self.h $(LIBCOMMON_ROOT)include/common/rwlock.h $(LIBCOMMON_ROOT)include/common/thread.h $(LIBCOMMON_ROOT)include/common/waiter.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/pstream.o: $(LIBCOMMON_ROOT)src/pstream.cc $(LIBCOMMON_ROOT)include/common/c++/new.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h $(LIBCOMMON_ROOT)include/common/refcnt.h
+$(LIBCOMMON_ROOT)src/pstream.o: $(LIBCOMMON_ROOT)src/pstream.cc $(LIBCOMMON_ROOT)include/common/c++/new.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/c++/stream.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/path.h $(LIBCOMMON_ROOT)include/common/refcnt.h $(LIBCOMMON_ROOT)include/common/size.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/refcnt-cpp.o: $(LIBCOMMON_ROOT)src/refcnt-cpp.cc $(LIBCOMMON_ROOT)include/common/c++/lock.h $(LIBCOMMON_ROOT)include/common/c++/refcount.h $(LIBCOMMON_ROOT)include/common/cas.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/mutex.h $(LIBCOMMON_ROOT)include/common/refcnt.h $(LIBCOMMON_ROOT)include/common/rwlock-self.h $(LIBCOMMON_ROOT)include/common/rwlock.h $(LIBCOMMON_ROOT)include/common/thread.h $(LIBCOMMON_ROOT)include/common/waiter.h
 	$(CXX) $(CXXFLAGS) $(CFLAGS) $(LIBCOMMON_CXXFLAGS) $(LIBCOMMON_CFLAGS) -c -o $@ $<

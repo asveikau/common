@@ -233,8 +233,8 @@ struct MemoryStream : public common::PStream
    exit:;
    }
 
-   int
-   Read(void *buf, int len, uint64_t pos, error *err)
+   size_t
+   Read(void *buf, size_t len, uint64_t pos, error *err)
    {
       common::locker readLock;
 
@@ -252,13 +252,13 @@ struct MemoryStream : public common::PStream
       if (pos >= size)
          return 0;
 
-      int r = (MIN(pos + len, size)) - pos;
+      size_t r = (MIN(pos + len, size)) - pos;
       memcpy(buf, (char*)mem->GetBuffer() + pos, r);
       return r;
    }
 
-   int
-   Write(const void *buf, int len, uint64_t pos, error *err)
+   size_t
+   Write(const void *buf, size_t len, uint64_t pos, error *err)
    {
       common::locker writeLock;
 

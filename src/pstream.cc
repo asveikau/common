@@ -10,6 +10,7 @@
 #include <common/c++/new.h>
 #include <common/path.h>
 #include <common/misc.h>
+#include <common/size.h>
 
 #if defined(_WINDOWS)
 #include <windows.h>
@@ -81,39 +82,62 @@ struct WinPStream : public common::PStream
       return r.QuadPart;
    }
 
-   int
-   Read(void *buf, int len, uint64_t pos, error *err)
+   size_t
+   Read(void *buf, size_t len, uint64_t pos, error *err)
    {
-      ULARGE_INTEGER uli = {0};
-      OVERLAPPED ol = {0};
-      DWORD out = 0;
+      return common::DWordIoFuncToSizeT(
+         [&] (DWORD n, error *err) -> DWORD
+         {
+            ULARGE_INTEGER uli = {0};
+            OVERLAPPED ol = {0};
+            DWORD out = 0;
 
-      uli.QuadPart = pos;
-      ol.Offset = uli.LowPart;
-      ol.OffsetHigh = uli.HighPart;
+            uli.QuadPart = pos;
+            ol.Offset = uli.LowPart;
+            ol.OffsetHigh = uli.HighPart;
 
-      if (!ReadFile(handle, buf, len, &out, &ol))
-         ERROR_SET(err, win32, GetLastError());
-
-   exit:
-      return ERROR_FAILED(err) ? -1 : out;
+            if (!ReadFile(handle, buf, n, &out, &ol))
+               ERROR_SET(err, win32, GetLastError());
+         exit:
+            return out;
+         },
+         [&] (DWORD n) -> void
+         {
+            buf = (char*)buf + n;
+            pos += n;
+         },
+         len,
+         err
+      );
    }
 
-   int
-   Write(const void *buf, int len, uint64_t pos, error *err)
+   size_t
+   Write(const void *buf, size_t len, uint64_t pos, error *err)
    {
-      ULARGE_INTEGER uli = {0};
-      OVERLAPPED ol = {0};
-      DWORD out = 0;
+      return common::DWordIoFuncToSizeT(
+         [&] (DWORD n, error *err) -> DWORD
+         {
+            ULARGE_INTEGER uli = {0};
+            OVERLAPPED ol = {0};
+            DWORD out = 0;
 
-      uli.QuadPart = pos;
-      ol.Offset = uli.LowPart;
-      ol.OffsetHigh = uli.HighPart;
+            uli.QuadPart = pos;
+            ol.Offset = uli.LowPart;
+            ol.OffsetHigh = uli.HighPart;
 
-      if (!WriteFile(handle, buf, len, &out, &ol))
-         ERROR_SET(err, win32, GetLastError());
-   exit:
-      return ERROR_FAILED(err) ? -1 : out;
+            if (!WriteFile(handle, buf, n, &out, &ol))
+               ERROR_SET(err, win32, GetLastError());
+         exit:
+            return out;
+         },
+         [&] (DWORD n) -> void
+         {
+            buf = (const char*)buf + n;
+            pos += n;
+         },
+         len,
+         err
+      );
    }
 
    void
@@ -188,24 +212,48 @@ struct UnixPStream : public common::PStream
       return r;
    }
 
-   int
-   Read(void *buf, int len, uint64_t pos, error *err)
+   size_t
+   Read(void *buf, size_t len, uint64_t pos, error *err)
    {
-      int r = pread(fd, buf, len, pos);
-      if (r < 0)
-         ERROR_SET(err, errno, errno);
-   exit:
-      return r;
+      return common::SSizeTIoFuncToSizeT(
+         [&] (size_t n, error *err) -> ssize_t
+         {
+            auto r = pread(fd, buf, n, pos);
+            if (r < 0)
+               ERROR_SET(err, errno, errno);
+         exit:
+            return r;
+         },
+         [&] (ssize_t n) -> void
+         {
+            buf = (char*)buf + n;
+            pos += n;
+         },
+         len,
+         err
+      );
    }
 
-   int
-   Write(const void *buf, int len, uint64_t pos, error *err)
+   size_t
+   Write(const void *buf, size_t len, uint64_t pos, error *err)
    {
-      int r = pwrite(fd, buf, len, pos);
-      if (r < 0)
-         ERROR_SET(err, errno, errno);
-   exit:
-      return r;
+      return common::SSizeTIoFuncToSizeT(
+         [&] (size_t n, error *err) -> ssize_t
+         {
+            auto r = pwrite(fd, buf, n, pos);
+            if (r < 0)
+               ERROR_SET(err, errno, errno);
+         exit:
+            return r;
+         },
+         [&] (ssize_t n) -> void
+         {
+            buf = (const char*)buf + n;
+            pos += n;
+         },
+         len,
+         err
+      );
    }
 
    void
@@ -291,10 +339,10 @@ struct StreamWrapper : public common::Stream
    exit:;
    }
 
-   int
-   Read(void *buf, int len, error *err)
+   size_t
+   Read(void *buf, size_t len, error *err)
    {
-      int r = stream->Read(buf, len, pos, err);
+      auto r = stream->Read(buf, len, pos, err);
       ERROR_CHECK(err);
       if (r > 0)
          pos += r;
@@ -302,10 +350,10 @@ struct StreamWrapper : public common::Stream
       return r;
    }
 
-   int
-   Write(const void *buf, int len, error *err)
+   size_t
+   Write(const void *buf, size_t len, error *err)
    {
-      int r = stream->Write(buf, len, pos, err);
+      auto r = stream->Write(buf, len, pos, err);
       ERROR_CHECK(err);
       if (r > 0)
          pos += r;
@@ -334,8 +382,8 @@ struct StreamWrapper : public common::Stream
 
 } // end namespace
 
-int
-common::PStream::Write(const void *buf, int len, uint64_t off, error *err)
+size_t
+common::PStream::Write(const void *buf, size_t len, uint64_t off, error *err)
 {
 #if defined(_WINDOWS)
    ERROR_SET(err, win32, ERROR_ACCESS_DENIED);
@@ -382,15 +430,15 @@ struct SubstreamWrapper : public common::PStream
    void GetStreamInfo(common::StreamInfo *info, error *err) {baseStream->GetStreamInfo(info, err); }
 
    void
-   Translate(uint64_t &callerPos, int &callerLen, error *err)
+   Translate(uint64_t &callerPos, size_t &callerLen, error *err)
    {
       callerLen = MIN(len - callerPos, callerLen);
       callerPos += pos;
    }
 
-   int Read(void *buf, int len, uint64_t pos, error *err)
+   size_t Read(void *buf, size_t len, uint64_t pos, error *err)
    {
-      int r = 0;
+      size_t r = 0;
       Translate(pos, len, err);
       ERROR_CHECK(err);
       r = baseStream->Read(buf, len, pos, err);
@@ -399,9 +447,9 @@ struct SubstreamWrapper : public common::PStream
       return r;
    }
 
-   int Write(const void *buf, int len, uint64_t pos, error *err)
+   size_t Write(const void *buf, size_t len, uint64_t pos, error *err)
    {
-      int r = 0;
+      size_t r = 0;
       Translate(pos, len, err);
       ERROR_CHECK(err);
       r = baseStream->Write(buf, len, pos, err);
