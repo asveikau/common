@@ -8,6 +8,8 @@
 
 #include <common/size.h>
 
+#ifdef SIZE_ADDMULT_NO_INLINE
+
 int
 size_add(size_t a, size_t b, size_t *sum)
 {
@@ -25,3 +27,5 @@ size_mult(size_t a, size_t b, size_t *product)
       *product = a*b;
    return r;
 }
+
+#endif

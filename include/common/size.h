@@ -13,15 +13,57 @@
 #include <stdint.h>
 #include <limits.h>
 
+#if defined(_MSC_VER)
+#include <intsafe.h>
+#endif
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+#if defined (__GNUC__)
+
+static __inline__
+int
+size_add(size_t a, size_t b, size_t *sum)
+{
+   return __builtin_add_overflow(a, b, sum) ? -1 : 0;
+}
+
+static __inline__
+int
+size_mult(size_t a, size_t b, size_t *product)
+{
+   return __builtin_mul_overflow(a, b, product) ? -1 : 0;
+}
+
+#elif defined(_MSC_VER)
+
+static __inline
+int
+size_add(size_t a, size_t b, size_t *sum)
+{
+   return FAILED(SizeTAdd(a, b, sum)) ? -1 : 0;
+}
+
+static __inline
+int
+size_mult(size_t a, size_t b, size_t *product)
+{
+   return FAILED(SizeTMult(a, b, product)) ? -1 : 0;
+}
+
+#else
+
+#define SIZE_ADDMULT_NO_INLINE 1
 
 int
 size_add(size_t a, size_t b, size_t *sum);
 
 int
 size_mult(size_t a, size_t b, size_t *product);
+
+#endif
 
 //
 // C99 introduces %zd etc. for printing size_t, but older compilers
