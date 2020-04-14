@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2017 Andrew Sveikauskas
+ Copyright (C) 2017-2020 Andrew Sveikauskas
 
  Permission to use, copy, modify, and distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
