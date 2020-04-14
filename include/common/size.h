@@ -91,13 +91,16 @@ IoFuncToSizeT(
    size_t total = 0;
    while (len)
    {
-      InnerLen r = ioFunc(MIN(max, len), err);
+      auto n = MIN(max, len);
+      InnerLen r = ioFunc(n, err);
       ERROR_CHECK(err);
       if (r <= 0)
          break;
       total += r;
       len -= r;
       advanceFunc(r);
+      if (r < n)
+         break;
    }
 exit:
    return total;
