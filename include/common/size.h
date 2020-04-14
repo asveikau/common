@@ -57,7 +57,7 @@ size_mult(size_t a, size_t b, size_t *product);
 #if defined(SSIZE_T_MAX)
 #define SSIZE_MAX SSIZE_T_MAX
 #else
-#define SSIZE_MAX (SIZE_MAX/2)
+#define SSIZE_MAX ((ssize_t)(SIZE_MAX/2))
 #endif
 #endif
 
