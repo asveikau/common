@@ -33,23 +33,15 @@ using namespace common;
 size_t
 common::Stream::Write(const void *buf, size_t len, error *err)
 {
-#if defined(_WINDOWS)
-   ERROR_SET(err, win32, ERROR_ACCESS_DENIED);
-#else
-   ERROR_SET(err, errno, EACCES);
-#endif
+   ERROR_SET(err, access);
 exit:
-   return -1;
+   return 0;
 }
 
 void
 common::StreamBase::Truncate(uint64_t length, error *err)
 {
-#if defined(_WINDOWS)
-   ERROR_SET(err, win32, ERROR_ACCESS_DENIED);
-#else
-   ERROR_SET(err, errno, EACCES);
-#endif
+   ERROR_SET(err, access);
 exit:;
 }
 

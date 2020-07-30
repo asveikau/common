@@ -14,17 +14,6 @@
 
 #include <vector>
 
-static void
-AccessDenied(error *err)
-{
-#if defined(_WINDOWS)
-   ERROR_SET(err, win32, ERROR_ACCESS_DENIED);
-#else
-   ERROR_SET(err, errno, EACCES);
-#endif
-exit:;
-}
-
 void *
 common::MemoryStreamBuffer::GetBuffer()
 {
@@ -40,7 +29,8 @@ common::MemoryStreamBuffer::GetSize()
 void
 common::MemoryStreamBuffer::Resize(size_t sz, error *err)
 {
-   AccessDenied(err);
+   ERROR_SET(err, access);
+exit:;
 }
 
 common::MemoryStreamBuffer::MemoryStreamBuffer() : Writeable(false) {}
@@ -205,8 +195,7 @@ struct MemoryStream : public common::PStream
 
       if (!mem->Writeable)
       {
-         AccessDenied(err);
-         goto exit;
+         ERROR_SET(err, access);
       }
 
       SynchronizeForWrite(writeLock);
@@ -264,8 +253,7 @@ struct MemoryStream : public common::PStream
 
       if (!mem->Writeable)
       {
-         AccessDenied(err);
-         goto exit;
+         ERROR_SET(err, access);
       }
 
       if (!len)

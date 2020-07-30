@@ -46,6 +46,26 @@ error_set_nomem(error *err)
 }
 
 void
+error_set_notimpl(error *err)
+{
+#if defined(_WINDOWS)
+   error_set_win32(err, E_NOTIMPL);
+#else
+   error_set_errno(err, ENOTSUP);
+#endif
+}
+
+void
+error_set_access(error *err)
+{
+#if defined(_WINDOWS)
+   error_set_win32(err, ERROR_ACCESS_DENIED);
+#else
+   error_set_errno(err, EACCES);
+#endif
+}
+
+void
 error_clear(error *err)
 {
    if (err)

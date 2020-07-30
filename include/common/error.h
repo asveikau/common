@@ -64,6 +64,12 @@ error_set_unknown(error *, const char *msg);
 void
 error_set_nomem(error *);
 
+void
+error_set_notimpl(error *);
+
+void
+error_set_access(error *err);
+
 #if defined(_WINDOWS)
 void
 error_set_win32(error *err, DWORD code);
