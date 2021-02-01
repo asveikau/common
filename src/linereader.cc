@@ -67,7 +67,7 @@ common::LineReader::ReadLine(error *err)
       {
          lineBuf.push_back(c);
       }
-      catch (std::bad_alloc)
+      catch (const std::bad_alloc&)
       {
          ERROR_SET(err, nomem);
       }

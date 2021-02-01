@@ -60,7 +60,7 @@ public:
             }
          );
       }
-      catch (std::bad_alloc)
+      catch (const std::bad_alloc&)
       {
          fn();
          ERROR_SET(err, nomem);

@@ -37,7 +37,7 @@ common::create_thread(
    {
       p = new ArgType(fn);
    }
-   catch (std::bad_alloc)
+   catch (const std::bad_alloc&)
    {
       ERROR_SET(err, nomem);
    }

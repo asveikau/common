@@ -26,7 +26,7 @@ common::DestructorQueue::Add(std::function<void(void)> &fn, error *err)
    {
       dtors.push_back(std::move(fn));
    }
-   catch (std::bad_alloc)
+   catch (const std::bad_alloc&)
    {
       ERROR_SET(err, nomem);
    }

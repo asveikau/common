@@ -70,7 +70,7 @@ struct MemoryStreamBufferVector : public common::MemoryStreamBuffer
       {
          vec.resize(len);
       }
-      catch (std::bad_alloc)
+      catch (const std::bad_alloc&)
       {
          ERROR_SET(err, nomem);
       }
@@ -305,7 +305,7 @@ common::CreateMemoryStreamBufferConst(
    {
       p->freeFn = freeFn;
    }
-   catch (std::bad_alloc)
+   catch (const std::bad_alloc&)
    {
       ERROR_SET(err, nomem);
    }

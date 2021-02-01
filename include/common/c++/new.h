@@ -24,7 +24,7 @@ New(T **ptr, error *err)
    {
       *ptr = new T();
    }
-   catch (std::bad_alloc)
+   catch (const std::bad_alloc&)
    {
       *ptr = nullptr;
       ERROR_SET(err, nomem);
@@ -50,7 +50,7 @@ New(std::shared_ptr<T> &ptr, error *err)
       ptr = std::shared_ptr<T>(p);
       p = nullptr;
    }
-   catch (std::bad_alloc)
+   catch (const std::bad_alloc&)
    {
       ERROR_SET(err, nomem);
    }
@@ -70,7 +70,7 @@ New(std::unique_ptr<T> &ptr, error *err)
       ptr = std::unique_ptr<T>(p);
       p = nullptr;
    }
-   catch (std::bad_alloc)
+   catch (const std::bad_alloc&)
    {
       ERROR_SET(err, nomem);
    }

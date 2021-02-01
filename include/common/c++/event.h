@@ -97,7 +97,7 @@ public:
       {
          p = new node(cb);
       }
-      catch (std::bad_alloc)
+      catch (const std::bad_alloc&)
       {
          ERROR_SET(err, nomem);
       }

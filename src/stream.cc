@@ -190,7 +190,7 @@ common::CreateStream(FILE *f, Stream **out, error *err)
    {
       *out = new FileStream(f); 
    }
-   catch (std::bad_alloc)
+   catch (const std::bad_alloc&)
    {
       ERROR_SET(err, nomem);
    }
