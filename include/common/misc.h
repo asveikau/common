@@ -9,11 +9,13 @@
 #ifndef misc_h
 #define misc_h
 
-#include <stdint.h>
 #include "error.h"
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #if defined(_WINDOWS)
 #include <io.h>
@@ -63,6 +65,28 @@ namespace common { namespace internal
 #ifndef FIELD_OFFSET
 #define FIELD_OFFSET(type, memb) ((intptr_t)(&((type*)0)->memb))
 #endif
+
+#define CHECK_ATOI_BODY(SUFFIX, FUNC, TYPE) \
+static INLINE                               \
+bool                                        \
+check_##SUFFIX(const char *p, TYPE *o)      \
+{                                           \
+   char *q = NULL;                          \
+   TYPE r = FUNC(p, &q, 10);                \
+   if (p != q)                              \
+   {                                        \
+      *o = r;                               \
+      return true;                          \
+   }                                        \
+   *o = -1;                                 \
+   return false;                            \
+}
+
+CHECK_ATOI_BODY(atoi, strtol, int)
+CHECK_ATOI_BODY(atoi64, strtoll, int64_t)
+CHECK_ATOI_BODY(atou64, strtoull, uint64_t)
+
+#undef CHECK_ATOI_BODY
 
 #if defined(__cplusplus)
 extern "C" {
