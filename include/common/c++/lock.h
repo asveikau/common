@@ -36,7 +36,7 @@ class locker
    void *context;
    void (*unlock)(void*);
 public:
-   locker() : context(nullptr) {}
+   locker() : context(nullptr), unlock(nullptr) {}
    locker(const locker &) = delete;
    ~locker() { release(); }
 
