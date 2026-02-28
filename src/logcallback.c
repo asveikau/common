@@ -106,7 +106,7 @@ struct log_context
    int id;
 };
 
-#define LOG_CONTEXT_INIT { NULL, NULL, {-1, -1}, {NULL}, -1 }
+#define LOG_CONTEXT_INIT { NULL, NULL, {-1, -1}, {0}, -1 }
 
 static void
 on_log_from_stderr(const char *msg)
