@@ -7,6 +7,7 @@
 */
 
 #include <common/error.h>
+#include <common/misc.h>
 
 #if defined(_MSC_VER)
 #define USE_STRERROR_S
@@ -16,7 +17,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #endif
 
-#if defined(__sun__)
+#if LIBCOMMON_GLIBC_CHECK(2,32) || defined(__sun__)
 #define USE_STRERROR_R
 #endif
 

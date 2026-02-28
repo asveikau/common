@@ -17,7 +17,7 @@ $(LIBCOMMON_ROOT)src/copy.o: $(LIBCOMMON_ROOT)src/copy.c $(LIBCOMMON_ROOT)includ
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) $(LATE_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/crashlog.o: $(LIBCOMMON_ROOT)src/crashlog.c $(LIBCOMMON_ROOT)include/common/backtrace.h $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/logger.h $(LIBCOMMON_ROOT)include/common/misc.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) $(LATE_CFLAGS) -c -o $@ $<
-$(LIBCOMMON_ROOT)src/error-libc.o: $(LIBCOMMON_ROOT)src/error-libc.c $(LIBCOMMON_ROOT)include/common/error.h
+$(LIBCOMMON_ROOT)src/error-libc.o: $(LIBCOMMON_ROOT)src/error-libc.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) $(LATE_CFLAGS) -c -o $@ $<
 $(LIBCOMMON_ROOT)src/error-windows.o: $(LIBCOMMON_ROOT)src/error-windows.c $(LIBCOMMON_ROOT)include/common/error.h $(LIBCOMMON_ROOT)include/common/misc.h $(LIBCOMMON_ROOT)include/common/size.h
 	$(CC) $(CFLAGS) $(LIBCOMMON_CFLAGS) $(LATE_CFLAGS) -c -o $@ $<
