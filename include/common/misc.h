@@ -92,7 +92,14 @@ CHECK_ATOI_BODY(atou64, strtoull, uint64_t)
 extern "C" {
 #endif
 
-#if defined(__linux__) || defined(__APPLE__)
+#define LIBCOMMON_GLIBC_CHECK(MAJOR,MINOR)                 \
+  (__GLIBC__ &&                                            \
+     (__GLIBC__ > MAJOR ||                                 \
+        (__GLIBC__ == MAJOR && __GLIBC_MINOR__ >= MINOR)))
+
+#if (defined(__linux__) && !LIBCOMMON_GLIBC_CHECK(2,34)) || \
+    defined(__APPLE__)
+#define LIBCOMMON_NEED_CLOSEFROM 1
 int
 closefrom(int minfd);
 #endif

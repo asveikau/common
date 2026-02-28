@@ -6,13 +6,15 @@
  copyright notice and this permission notice appear in all copies.
 */
 
+#include <common/misc.h>
+
+#if LIBCOMMON_NEED_CLOSEFROM
+
 #if defined(__linux__)
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#include <common/misc.h>
 
 int
 closefrom(int minfd)
@@ -61,3 +63,5 @@ closefrom(int minfd)
    return 0;
 }
 #endif
+
+#endif // need closefrom
