@@ -52,7 +52,19 @@ errno_get_string(error *err)
       memset(p, 0, sz);
 
 #if defined(USE_STRERROR_R)
+#if defined(_GNU_SOURCE)
+      // GNU extension: strerror_r might discard our buffer and return a static
+      // string.
+      char *q = strerror_r(err->code, p, sz);
+      if (p != q)
+      {
+         free(p);
+         p = NULL;
+      }
+      return q;
+#else
       strerror_r(err->code, p, sz);
+#endif
 #elif defined(USE_STRERROR_S)
       strerror_s(p, sz, err->code);
 #endif
