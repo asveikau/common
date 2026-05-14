@@ -18,116 +18,23 @@
 #include <stdlib.h>
 
 #if defined(_WINDOWS)
-#include <io.h>
-#include <fcntl.h>
-
-#define stdio_set_binary(fp) _setmode(_fileno(fp), _O_BINARY)
-#else
-#define stdio_set_binary(fp) ((void)0)
-#endif
-
-#if defined(_WINDOWS)
 #define strtoull _strtoui64
 #define strtoll  _strtoi64
-#endif
-
-#ifndef MIN
-#define MIN(X, Y)    (((X) < (Y)) ? (X) : (Y))
-#endif
-
-#ifndef MAX 
-#define MAX(X, Y)    (((X) > (Y)) ? (X) : (Y))
-#endif
-
-#if !defined(ARRAY_SIZE)
-#if defined(__cplusplus)
-namespace common { namespace internal
-{
-   template<class T, size_t N>
-   char (&SizeHelper(T (&arr)[N]))[N];
-} } // end namespace
-#define ARRAY_SIZE(X) sizeof(common::internal::SizeHelper(X))
-#else
-#define ARRAY_SIZE(X) (sizeof(X)/sizeof(*X))
-#endif
-#endif
-
-#if defined(__cplusplus)
-#define INLINE inline
-#elif defined(_MSC_VER)
-#define INLINE __declspec(inline)
-#elif defined(__GNUC__)
-#define INLINE __inline__
-#else
-#error
-#endif
-
-#ifndef FIELD_OFFSET
-#define FIELD_OFFSET(type, memb) ((intptr_t)(&((type*)0)->memb))
-#endif
-
-#define CHECK_ATOI_BODY(SUFFIX, FUNC, TYPE) \
-static INLINE                               \
-bool                                        \
-check_##SUFFIX(const char *p, TYPE *o)      \
-{                                           \
-   char *q = NULL;                          \
-   TYPE r = FUNC(p, &q, 10);                \
-   if (p != q)                              \
-   {                                        \
-      *o = r;                               \
-      return true;                          \
-   }                                        \
-   *o = -1;                                 \
-   return false;                            \
-}
-
-CHECK_ATOI_BODY(atoi, strtol, int)
-CHECK_ATOI_BODY(atoi64, strtoll, int64_t)
-CHECK_ATOI_BODY(atou64, strtoull, uint64_t)
-
-#undef CHECK_ATOI_BODY
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
-#define LIBCOMMON_GLIBC_CHECK(MAJOR,MINOR)                 \
-  (__GLIBC__ &&                                            \
-     (__GLIBC__ > MAJOR ||                                 \
-        (__GLIBC__ == MAJOR && __GLIBC_MINOR__ >= MINOR)))
-
-#if (defined(__linux__) && !LIBCOMMON_GLIBC_CHECK(2,34)) || \
-    defined(__APPLE__)
-#define LIBCOMMON_NEED_CLOSEFROM 1
-int
-closefrom(int minfd);
-#endif
-
-#if defined(_WINDOWS)
-
-PWSTR
-ConvertToPwstr(PCSTR utf8, error *err);
-
-PSTR
-ConvertToPstr(PCWSTR utf16, error *err);
-
-#define ftello _ftelli64
-#define fseeko _fseeki64
-
-int
-asprintf(char **dst, const char *fmt, ...);
-
-int
-vasprintf(char **dst, const char *fmt, va_list ap);
-
 #endif
 
 #if !defined(PID_T_FMT)
 #define PID_T_FMT "d"
 #endif
 
-#if defined(__cplusplus)
-}
-#endif
+// These were refactored away from misc.h
+#include "inline.h"
+#include "minmax.h"
+#include "arraysize.h"
+#include "fieldoffset.h"
+#include "checkatoi.h"
+#include "glibccheck.h"
+#include "closefrom.h"
+#include "winutf.h"
+#include "stdiomisc.h"
+
 #endif
