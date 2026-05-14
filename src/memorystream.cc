@@ -10,7 +10,7 @@
 #include <common/c++/new.h>
 #include <common/c++/lock.h>
 #include <common/cas.h>
-#include <common/misc.h>
+#include <common/minmax.h>
 
 #include <vector>
 

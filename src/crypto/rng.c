@@ -7,7 +7,7 @@
 */
 
 #include <common/crypto/rng.h>
-#include <common/misc.h>
+#include <common/minmax.h>
 
 #if defined(_WINDOWS)
 

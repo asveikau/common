@@ -8,7 +8,9 @@
 
 #include <common/logger.h>
 #include <common/path.h>
-#include <common/misc.h>
+
+#include <common/arraysize.h>
+#include <common/winutf.h>
 
 #include <stdio.h>
 #include <stdlib.h>

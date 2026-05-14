@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "inline.h"
+
 #define CHECK_ATOI_BODY(SUFFIX, FUNC, TYPE) \
 static INLINE                               \
 bool                                        \

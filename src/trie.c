@@ -7,7 +7,7 @@
 */
 
 #include <common/trie.h>
-#include <common/misc.h>
+#include <common/arraysize.h>
 
 #include <stdlib.h>
 #include <string.h>

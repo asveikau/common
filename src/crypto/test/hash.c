@@ -11,7 +11,7 @@
 #include <common/crypto/md5.h>
 #include <common/crypto/sha1.h>
 #include <common/crypto/sha256.h>
-#include <common/misc.h>
+#include <common/stdiomisc.h>
 
 #define CONCAT(X, Y)  CONCAT2(X, Y)
 #define CONCAT2(A, B) A ## _ ## B

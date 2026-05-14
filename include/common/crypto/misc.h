@@ -10,7 +10,9 @@
 #define crypto_misc_h
 
 #include <stdint.h>
-#include "../misc.h"
+#include "../inline.h"
+#include "../minmax.h"
+#include "../arraysize.h"
 
 #if defined(__cplusplus)
 extern "C" {

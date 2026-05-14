@@ -26,7 +26,9 @@
 #include <fcntl.h>
 #endif
 
-#include <common/misc.h>
+#include <common/minmax.h>
+#include <common/stdiomisc.h>
+#include <common/winutf.h>
 
 using namespace common;
 
