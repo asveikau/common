@@ -6,7 +6,7 @@
  copyright notice and this permission notice appear in all copies.
 */
 
-#include <common/misc.h>
+#include <common/winutf.h>
 
 PSTR
 ConvertToPstr(PCWSTR str, error *err)

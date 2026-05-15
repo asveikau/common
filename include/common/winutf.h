@@ -11,6 +11,7 @@
 #if defined(_WINDOWS)
 
 #include <windows.h>
+#include "error.h"
 
 #ifdef __cplusplus
 extern "C" {

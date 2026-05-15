@@ -8,9 +8,10 @@
 
 #include <common/backtrace.h>
 #include <common/logger.h>
-#include <common/misc.h>
+#include <common/arraysize.h>
 
 #include <stdio.h>
+#include <string.h>
 
 static void (*on_crash)(void*) = NULL;
 static void *on_crash_ctx = NULL;

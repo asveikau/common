@@ -7,7 +7,7 @@
 */
 
 #include <common/exec.h>
-#include <common/misc.h>
+#include <common/closefrom.h>
 
 #include <unistd.h>
 #include <stdlib.h>

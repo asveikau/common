@@ -7,7 +7,7 @@
 */
 
 #include <common/error.h>
-#include <common/misc.h>
+#include <common/glibccheck.h>
 
 #if defined(_MSC_VER)
 #define USE_STRERROR_S

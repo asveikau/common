@@ -7,7 +7,7 @@
 */
 
 #include <common/backtrace.h>
-#include <common/misc.h>
+#include <common/arraysize.h>
 
 #include <stdio.h>
 

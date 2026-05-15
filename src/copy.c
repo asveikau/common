@@ -22,7 +22,7 @@
 //
 
 #include <common/path.h>
-#include <common/misc.h>
+#include <common/winutf.h>
 #include <common/size.h>
 
 #if defined(_WINDOWS)

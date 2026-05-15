@@ -112,7 +112,8 @@ size_mult(size_t a, size_t b, size_t *product);
 // and other types, like int or size_t
 //
 #if defined(__cplusplus)
-#include <common/misc.h>
+#include <common/error.h>
+#include <common/minmax.h>
 #if defined(_WINDOWS)
 #include <windows.h>
 #endif
