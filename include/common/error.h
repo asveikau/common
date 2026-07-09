@@ -10,6 +10,7 @@
 #define error_h_
 
 #include <string.h>
+#include <stdarg.h>
 #include <errno.h>
 
 #if defined(_WINDOWS)
@@ -60,6 +61,12 @@ error_set_errno(error *err, int errno_value);
 
 void
 error_set_unknown(error *, const char *msg);
+
+void
+error_set_fmt(error *err, const char *fmt, ...);
+
+void
+error_set_vfmt(error *err, const char*, va_list ap);
 
 void
 error_set_nomem(error *);
