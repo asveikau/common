@@ -24,6 +24,7 @@
 #include <common/path.h>
 #include <common/winutf.h>
 #include <common/size.h>
+#include <common/minmax.h>
 
 #if defined(_WINDOWS)
 #include <windows.h>

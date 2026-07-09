@@ -10,6 +10,7 @@
 #include <common/arraysize.h>
 
 #include <stdio.h>
+#include <string.h>
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
