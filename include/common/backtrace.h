@@ -11,7 +11,7 @@
 
 #include <stddef.h>
 
-#if defined(__linux__) || defined(__APPLE__) || \
+#if (defined(__linux__) && defined(__GLIBC__)) || defined(__APPLE__) || \
     defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <execinfo.h>
 #else

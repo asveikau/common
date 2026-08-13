@@ -567,7 +567,7 @@ is_drive_letter(char ch)
 #include <dirent.h>
 #include <errno.h>
 
-#if defined(__linux)
+#if defined(__linux__)
 #include <linux/limits.h>
 #endif
 #ifndef PATH_MAX

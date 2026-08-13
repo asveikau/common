@@ -8,6 +8,7 @@
 
 #include <common/error.h>
 #include <common/glibccheck.h>
+#include <string.h>
 
 #if defined(_MSC_VER)
 #define USE_STRERROR_S
@@ -17,7 +18,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #endif
 
-#if LIBCOMMON_GLIBC_CHECK(2,32) || defined(__sun__)
+#if (LIBCOMMON_GLIBC_CHECK(2,32) || (defined(__linux__) && !defined(__GLIBC__))) || defined(__sun__)
 #define USE_STRERROR_R
 #endif
 
@@ -52,7 +53,7 @@ errno_get_string(error *err)
       memset(p, 0, sz);
 
 #if defined(USE_STRERROR_R)
-#if defined(_GNU_SOURCE)
+#if defined(_GNU_SOURCE) && defined(__GLIBC__)
       // GNU extension: strerror_r might discard our buffer and return a static
       // string.
       char *q = strerror_r(err->code, p, sz);
