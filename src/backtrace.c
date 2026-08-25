@@ -102,6 +102,7 @@ exit:
 #else
 
 #include <dlfcn.h>
+#include <string.h>
 
 void
 describe_symbol(void *addr, char *buf, int bufsz)
